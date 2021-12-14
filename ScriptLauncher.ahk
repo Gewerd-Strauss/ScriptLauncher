@@ -1127,6 +1127,7 @@
 			{
 				SusBtnNumber:=KillBtnNumber+1
 				GuiControl, Disable, Button%SusBtnNumber%
+				GuiControl,, Button%SusBtnNumber%, S
 			}
 			if IniObj["Script Behaviour Settings"].bHideOnKillScript
 				Gui, 1: hide
@@ -1272,6 +1273,7 @@
 					SusBtnNumber:=k*3
 					GuiControl, disable, Button%KillBtnNumber%
 					GuiControl, disable, Button%SusBtnNumber%
+					GuiControl,, Button%SusBtnNumber%, S
 				}
 				else
 					KillBtnNumber:=k*2
