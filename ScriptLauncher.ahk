@@ -874,13 +874,13 @@
 		IncludedScripts:=aTemp[2]
 		ExcludedScripts:=aTemp[3]
 		IniObj:=aTemp[4]
-		if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+		if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 			SceneWidth+=25
 		aTemp:=[] ; clear array again
 	}
 	else
 	{
-		DefFileTemplate:="[Insert Folders to INCLUDE below]`n[Insert Script-Names of Scripts in added Folders to Exclude below]`n[Insert Paths to Scripts to INCLUDE below]`n[Script Behaviour Settings]`nbShowTooltips=1`nbHideOnLaunchScript=0`nbHideOnEditScript=1`nbHideOnOpenFolder=1`nbHideOnKillScript=0`nbHideOnSettingsOpened=1`nbBetaVersionSuspend=1"
+		DefFileTemplate:="[Insert Folders to INCLUDE below]`n[Insert Script-Names of Scripts in added Folders to Exclude below]`n[Insert Paths to Scripts to INCLUDE below]`n[Script Behaviour Settings]`nbShowTooltips=1`nbHideOnLaunchScript=0`nbHideOnEditScript=1`nbHideOnOpenFolder=1`nbHideOnKillScript=0`nbHideOnSettingsOpened=1`nbAddSuspendButtons=1"
 		FileAppend, %DefFileTemplate%,%sExcludes%
 	}
 	aTemp:=f_CreateFileNameAndPathArrays(IncludedFolders,IncludedScripts,aFolderPaths,aPathArr,aFileNameArr,ExcludedScripts)
@@ -910,12 +910,12 @@
 			if % aEnableKillButton[k]
 			{
 				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% vKillButton%Ind% hwndKillBtn%Ind% y%YPos% glKillScript , K
-				if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 					Gui, 1: Add, BUtton, w20 h20 x%XButtonXCoord2% vSusButton%Ind% hwndSusBtn%Ind% y%YPos% glSusScript , S
 				if IniObj["Script Behaviour Settings"].bShowTooltips
 				{
 					AddToolTip(KillBtn%Ind% ,"Kill " aFileNameArr[K])
-					if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+					if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 						AddToolTip(SusBtn%Ind% ,"Suspend " aFileNameArr[K])
 				}
 				aPIDarr[k]:=PID_T ; "," PID_T2 "," PID_RGX "," PID_k "," PID_k_c "," PID_WinGetCleanEX 
@@ -924,12 +924,12 @@
 			else
 			{
 				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% vKillButton%Ind% hwndKillBtn%Ind% y%YPos% glKillScript disabled , K
-				if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 					Gui, 1: Add, BUtton, w20 h20 x%XButtonXCoord2% vSusButton%Ind% hwndSusBtn%Ind% y%YPos% glSusScript disabled, S
 				if IniObj["Script Behaviour Settings"].bShowTooltips
 				{
 					AddToolTip(KillBtn%Ind% ,"Kill " aFileNameArr[K])
-					if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+					if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 						AddToolTip(SusBtn%Ind% ,"Suspend " aFileNameArr[K])
 				}
 			}
@@ -955,7 +955,7 @@
 	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonSHwnd, &S
 	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonQHwnd, &?
 	Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% y%ButtonPos% HwndButtonXHwnd, &X
-	if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+	if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 		Gui, 1: Add, Button, w20 h20 x%XButtonXCoord2% y%ButtonPos% HwndButtonFHwnd, &F
 	Gui, 1: +AlwaysOnTop -Caption +ToolWindow +Border
 	if IniObj["Script Behaviour Settings"].bShowTooltips
@@ -1023,7 +1023,7 @@
 			ProcessRun:=A_Index								;; get the current pid'
 			KillBtnNumber:=ProcessRun*3-1
 			guiControl, enable, Button%KillBtnNumber%
-			if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+			if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 			{
 				SusBtnNumber:=KillBtnNumber+1
 				guiControl, enable, Button%SusBtnNumber%
@@ -1123,7 +1123,7 @@
 					Process, Close, % aPIDarr[Index]
 			}
 			GuiControl, Disable, Button%KillBtnNumber%
-			if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+			if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 			{
 				SusBtnNumber:=KillBtnNumber+1
 				GuiControl, Disable, Button%SusBtnNumber%
@@ -1169,14 +1169,14 @@
 		gosub, GetProgRunMatrix2
 		for k,v in aEnableKillButton
 		{
-			if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+			if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 				KillBtnNumber:=A_Index*3-1
 			Else
 				KillBtnNumber:=A_Index*2
 			if v
 			{
 				guicontrol, enable, Button%KillBtnNumber%
-				if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 				{
 					SusBtnNumber:=KillBtnNumber+1
 					guicontrol, enable, Button%SusBtnNumber%
@@ -1266,7 +1266,7 @@
 					if !HasVal(aButtonXClosedScripts,v)
 						aButtonXClosedScripts.push(v)
 				}
-				if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 				{
 					KillBtnNumber:=k*3-1
 					SusBtnNumber:=k*3
@@ -1296,7 +1296,7 @@
 						ProcessRun:=A_Index								;; get the current pid'
 						KillBtnNumber:=ProcessRun*3-1
 						guiControl, enable, Button%KillBtnNumber%
-						if IniObj["Script Behaviour Settings"].bBetaVersionSuspend
+						if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 						{
 							SusBtnNumber:=KillBtnNumber+1
 							guiControl, enable, Button%SusBtnNumber%
