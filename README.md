@@ -32,6 +32,12 @@ If there are specific scripts in the folders added above that you don't want to 
 
 Insert any script path to a specific script to include, even if you don't want to include the entire directory.
 
+
+
+--- 
+
+Save the file after adding desired paths, then reload for the changes to take effect.
+
 ### 4. "Script Behaviour Settings"
 
 | Setting| Meaning | Default |
@@ -44,7 +50,19 @@ Insert any script path to a specific script to include, even if you don't want t
    | bHideOnSettingsOpened | Hide Launcher when opening the settings file | 1
    | bAddSuspendButtons | Add "Suspend [ScriptName]"-buttons for each script | 1
    
-   
+### The bottom buttons:
+
+From Left to right:
+
+1. `M`: Minimise the gui. The same as pressing <kbd>Alt</kbd>+<kbd>^</kbd> (or, precisely, SC029)
+2. `E`: Edit the launcher
+3. `D`: Open the script's directory
+4. `R`: Restart the script - necessary when adding scripts to be displayed
+5. `O`: open the options file mentioned above
+6. `S`: open the Menu to switch the editor for ahk-files
+7. `?`: Information about this script, links to this github and its origins.
+8. `X`: Kill all active scripts on the list
+9. `F`: Suspend/continue all scripts on the list.
    
    # Known Bugs
    
