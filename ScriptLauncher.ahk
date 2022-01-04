@@ -811,14 +811,14 @@
 	SetTitleMatchMode, 2 
 	global script := { base : script
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "2.7.1"
+		,version : "2.9.1"
 		,author : "Gewerd Strauss"
 		,authorlink : ""
 		,email : "csa-07@freenet.de"
 		,credits : "AfterLemon"
 		,creditslink : "https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/"
 		,crtdate : "30.05.2013"
-		,moddate : "14.12.2021"
+		,moddate : "04.01.2022"
 		,homepagetext : ""
 		,homepagelink : ""
 		,ghtext 	 : "My GitHub"
@@ -935,7 +935,15 @@
 			}
 		}
 	}
-
+	ButtonM_Ind:=Ind*3+1
+	ButtonE_Ind:=Ind*3+2
+	ButtonD_Ind:=Ind*3+3
+	ButtonR_Ind:=Ind*3+4
+	ButtonO_Ind:=Ind*3+5
+	ButtonS_Ind:=Ind*3+6
+	ButtonQ_Ind:=Ind*3+7
+	ButtonX_Ind:=Ind*3+8
+	ButtonF_Ind:=Ind*3+9
 	DetectHiddenWindows, Off ; Detect hidden windows
 	SetTitleMatchMode, 2
 	YPos += 50
@@ -981,7 +989,7 @@
 		gosub, 2Button+
 	return
 	#IfWinActive, About AHK ScriptLauncher
-	Esc:: Winclose
+	Esc:: gui, 1: cancel
 	Drag:
 	PostMessage, 0xA1, 2,,, A
 	return
@@ -1190,9 +1198,14 @@
 				guicontrol, disable, Button%SusBtnNumber%
 			}
 		}
-
-		CurrentMonitor:=GetMonitorMouse()
-		SysGet, Mon, Monitor,% GetMonitorMouse()
+		if (Source="lCheckButtons")
+		{
+			Source:=""
+			return
+		}
+		Source:=""
+		
+		SysGet, Mon, Monitor,% CurrentMonitor:=GetMonitorMouse()
 		MonWidth:=(MonLeft?MonLeft:MonRight)
 		if SubStr(MonWidth, 1,1)="-"
 			MonWidth:=SubStr(MonWidth,2)
@@ -1209,7 +1222,7 @@
 		Else
 			PositionXGui:=MouseX
 		d:=(MonWidth-abs(MouseX)+SceneWidth)
-		if CurrentMonitor=1
+		if (CurrentMonitor=1)
 		{
 			if (MonWidth-abs(MouseX)+SceneWidth)>(MonWidth)
 			{
@@ -1220,12 +1233,21 @@
 			}
 		} 
 		Gui, 1: Show, w%SceneWidth% h%YPos% x%PositionXGui% y%PositionYGui%, Main Window
+	guicontrol, focus, Button%ButtonM_Ind%
+		Settimer, lCheckButtons,100
 		WinGetPos X, Y, Width, Height, Main Window
 		MaxY:=SizeBottom - Height
 		MaxX:=SizeRight - Width - 
 		WinMove Main Window, , %PositionXGui%, %PositionYGui%
 	}
 	return
+
+	lCheckButtons:
+	if !WinExist("Main Window") ;; window not visible anymore, so stop the timer
+		Settimer, lCheckButtons, off
+	Source:=A_ThisLabel		;; return out of the '2Button+'-subroutine earlier if coming from this label.
+	gosub, 2Button+
+	Return
 
 	ButtonF:
 	{
