@@ -45,7 +45,7 @@ Save the file after adding desired paths, then reload for the changes to take ef
    | bShowTooltips | Display Tooltips on meaning of any button | 1/On
    | bHideOnLaunchScript | Hide Launcher at scriptstart | 0/Off
    | bHideOnEditScript | Hide Launcher when opening the launcher in editor | 1
-   | bHideOnOpenFolder | Hide Launcher when showing any script in folder | 1/On
+   | bHideOnOpenFolder | Hide Launcher when showing any script in folder | 1
    | bHideOnKillScript | Hide Launcher when stopping any script | 0
    | bHideOnSettingsOpened | Hide Launcher when opening the settings file | 1
    | bAddSuspendButtons | Add "Suspend [ScriptName]"-buttons for each script | 1
@@ -66,7 +66,7 @@ From Left to right:
    
    # Known Bugs
    
-   - when disabling Suspend-Buttons, currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.
+   - when disabling Suspend-Buttons (by setting bAddSuspendButtons=0), currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.
    
    
  MISSING IN DOCUMENTATION:
