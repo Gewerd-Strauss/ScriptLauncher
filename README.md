@@ -66,7 +66,7 @@ From Left to right:
    
    # Known Bugs
    
-   - when disabling Suspend-Buttons, currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.
+   - when disabling Suspend-Buttons (by setting bAddSuspendButtons=0), currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.
    
    
  MISSING IN DOCUMENTATION:
