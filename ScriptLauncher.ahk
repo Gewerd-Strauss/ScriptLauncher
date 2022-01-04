@@ -1,5 +1,7 @@
 ﻿/*  */ 	; Modified by Gewerd S.Source Code at bottom
-	; reworked by Gewerd S. to allow files from multiple paths to be included
+	; reworked by Gewerd S. to allow files from multiple paths to be included, as well as a variety of other small goodies.
+	Please see documentation on github, found in the "About ScriptLauncher"-Menu (pressing '?' while GUI is visible)
+	Default, hardcoded hotkey to open GUI: !Sc029 (that is the caret/"^"/Ctrl-Modifiersymbol)
 	/*
 	
 	
@@ -823,8 +825,8 @@
 		,homepagelink : ""
 		,ghtext 	 : "My GitHub"
 		,ghlink		 : "https://github.com/Gewerd-Strauss"
-		,doctext : ""
-		,doclink	 : ""
+		,doctext : "Documentation"
+		,doclink	 : "https://github.com/Gewerd-Strauss/ScriptLauncher#scriptlauncher---first-startup"
 		,forumtext 	 : ""
 		,forumlink	 : ""
 		,donateLink : ""
