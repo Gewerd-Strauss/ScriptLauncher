@@ -811,7 +811,7 @@
 	SetTitleMatchMode, 2 
 	global script := { base : script
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "2.9.1"
+		,version : "2.10.1"
 		,author : "Gewerd Strauss"
 		,authorlink : ""
 		,email : "csa-07@freenet.de"
@@ -935,7 +935,7 @@
 			}
 		}
 	}
-	ButtonM_Ind:=Ind*3+1
+	ButtonM_Ind:=Ind*(IniObj["Script Behaviour Settings"].bAddSuspendButtons?3:2)+1
 	ButtonE_Ind:=Ind*3+2
 	ButtonD_Ind:=Ind*3+3
 	ButtonR_Ind:=Ind*3+4
@@ -1195,7 +1195,8 @@
 			{
 				guicontrol, disable, Button%KillBtnNumber%
 				SusBtnNumber:=KillBtnNumber+1
-				guicontrol, disable, Button%SusBtnNumber%
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+					guicontrol, disable, Button%SusBtnNumber%
 			}
 		}
 		if (Source="lCheckButtons")
@@ -1233,7 +1234,7 @@
 			}
 		} 
 		Gui, 1: Show, w%SceneWidth% h%YPos% x%PositionXGui% y%PositionYGui%, Main Window
-	guicontrol, focus, Button%ButtonM_Ind%
+		guicontrol, focus, Button%ButtonM_Ind%
 		Settimer, lCheckButtons,100
 		WinGetPos X, Y, Width, Height, Main Window
 		MaxY:=SizeBottom - Height
