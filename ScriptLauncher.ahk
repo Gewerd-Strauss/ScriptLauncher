@@ -813,7 +813,7 @@
 	SetTitleMatchMode, 2 
 	global script := { base : script
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "2.10.1"
+		,version : "2.11.1"
 		,author : "Gewerd Strauss"
 		,authorlink : ""
 		,email : "csa-07@freenet.de"
