@@ -15,7 +15,7 @@ By default, you will encounter this template:
     bHideOnOpenFolder=1
     bHideOnKillScript=0
     bHideOnSettingsOpened=1
-    bBetaVersionSuspend=1
+    bAddSuspenduttons=1
 
 Each section has its own behaviour.
 Every entry must be on its own line, regardless of section.
@@ -49,8 +49,10 @@ Save the file after adding desired paths, then reload for the changes to take ef
    | bHideOnKillScript | Hide Launcher when stopping any script | 0
    | bHideOnSettingsOpened | Hide Launcher when opening the settings file | 1
    | bAddSuspendButtons | Add "Suspend [ScriptName]"-buttons for each script | 1
-   
-### The bottom buttons:
+
+
+
+### 5. The bottom buttons:
 
 From Left to right:
 
