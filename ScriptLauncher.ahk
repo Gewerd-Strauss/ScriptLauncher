@@ -1,15 +1,15 @@
 ﻿/*  */ 	; Modified by Gewerd S.Source Code at bottom
 	; reworked by Gewerd S. to allow files from multiple paths to be included, as well as a variety of other small goodies.
 	Please see documentation on github, found in the "About ScriptLauncher"-Menu (pressing '?' while GUI is visible)
-	Default, hardcoded hotkey to open GUI: !Sc029 (that is the caret/"^"/Ctrl-Modifiersymbol)
+	Default, hardcoded hotkey to open GUI: !Sc029 (that is the caret/"^"/Ctrl-Modifiersymbol itself. Can be changed on line 987, or by searching for the string "::".)
 	/*
 	
 	
 	;; M= modified, if unsure not marked as such
-	based on original, see end of file 	| AfterLemon 												| http://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/
+	based on original | AfterLemon 												| https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-gui/
 
 	Code by others:
-	GetMonitorMouse 					| qZanity 													| fetched from https:///*  */www.autohotkey.com/board/topic/98014-get-monitor-that-mouse-is-in/?p=617711
+	GetMonitorMouse 					| qZanity 													| fetched from https://www.autohotkey.com/board/topic/98014-get-monitor-that-mouse-is-in/?p=617711
 	fTrayRefresh 						| Courtesy of masato, original by Noesis 					| fetched from https://www.autohotkey.com/boards/viewtopic.php?p=156072&sid=f3233e93ef8f9df2aaf4d3dd88f320d0#p156072
 	f_SortArrays 						| u/astrosofista											| fetched from https://www.reddit.com/r/AutoHotkey/comments/qx0nho/comment/hl6ig7a/?utm_source=share&utm_medium=web2x&context=3
 	PID by script name 					| just me													| fetched from https://www.autohotkey.com/board/topic/90589-how-to-get-pid-just-by-a-scripts-name/?p=572448
@@ -837,8 +837,6 @@
 		,vAHK	 : A_AhkVersion}	
 	
 	vTimeTillReload:=1000*60*5
-	; Settimer, lReload, %vTimeTillReload%
-	;
 	
 	ButtonWidth:=180 ; Can change these values
 	IndentFromRight:=230
@@ -2116,167 +2114,4 @@
 	;________________________________
 	;________________________________
 
-	/*
-		
-				#NoEnv
-				SetBatchLines -1
-				;#UseHook
-				;#Warn
-				#Persistent
-				#SingleInstance Force
-				;Menu, Tray, Icon, C:\WINDOWS\system32\imageres.dll,227 ;Set custom Script icon
-				menu, Tray, NoIcon
-				SysGet, Size, MonitorWorkArea
-				SetTitleMatchMode, 2 
-				
-				
-				
-				
-				;
-				ButtonWidth:=160                      ; Can change these values
-				IndentFromRight:=230
-				;
-				XButtonXCoord:=ButtonWidth + 10       ; Don't change these
-				TitleWidth:=ButtonWidth - 20
-				SceneWidth:=ButtonWidth + 35
-				;
-				GuiRight:=SizeRight - IndentFromRight - SceneWidth
-				Button_Right:=SizeRight - IndentFromRight - SceneWidth
-				Button_Bottom:=SizeBottom - 39
-				;
-				Gui, 1: Color, cFFFFFF
-				Loop, %A_ScriptDir%\*.ahk
-				{
-					If (A_LoopFileName <> "Main Window.ahk")
-					{
-						A_IndexCount:=A_Index
-						If A_IndexCountMinus
-							A_IndexCount -= A_IndexCountMinus
-						YPos:=A_IndexCount * 25 - 20
-						StringTrimRight, FileName%A_IndexCount%, A_LoopFileName, 4
-						RunPath%A_IndexCount%:=A_LoopFileFullPath
-						Gui, 1: Add, Button, w%ButtonWidth% h20 x5 y%YPos% gRun, % FileName%A_IndexCount%
-						Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% Disabled y%YPos% vFileName2%A_IndexCount%, K
-						YPos%A_IndexCount%:=YPos . "," . FileName%A_IndexCount%
-					}
-					else
-					{
-						A_IndexCountMinus++
-						continue
-					}
-				}
-				YPos += 50
-				GuiBottom:=SizeBottom - YPos
-				TitlePos:=YPos - 21
-				ButtonPos:=YPos - 25
-				Gui, 1: Font, w700 c000000
-				Gui, 1: Add, Text, w%TitleWidth% h20 x30 y%TitlePos% Center gDrag, Productivity scripts
-				Gui, 1: Font, c000000
-				Gui, 1: Add, Button, w20 h20 x5 y%ButtonPos%, &-
-				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% y%ButtonPos%, &X
-				Gui, 1: +AlwaysOnTop -Caption +ToolWindow +Border
-				Gui, 1: Show, NoActivate w%SceneWidth% h%YPos% x%GuiRight% y%GuiBottom%, Main Window
-				;
-				WinGetPos X, Y, Width, Height, Main Window
-				MaxY:=SizeBottom - Height
-				MaxX:=SizeRight - Width - IndentFromRight
-				WinMove Main Window, , %MaxX%, %MaxY%
-				return
-				
-				
-				!#x::
-				IfWinExist Minimized ahk_class AutoHotkeyGUI, Productivity scripts
-				{
-					gosub 2Button+
-					return
-				}
-				else IfWinExist Main Window ahk_class AutoHotkeyGUI, Productivity scripts
-				{
-					gosub Button-
-					return
-				}
-				
-				
-				Drag:
-				PostMessage, 0xA1, 2,,, A
-				return
-				
-				Run:
-				Loop
-				{
-					If (A_GuiControl = FileName%A_Index%)
-					{
-						RunPath:=RunPath%A_Index%
-						Run, Autohotkey.exe "%RunPath%",,, ProgRun%A_Index%
-						ProcessRun:=A_Index
-						break
-					}
-				}
-				GuiControl, Enable, FileName2%ProcessRun%
-				Gui, 1: Show, NoActivate w%SceneWidth% h%YPos% x%GuiRight% y%GuiBottom%, Main Window
-				;
-				WinGetPos X, Y, Width, Height, Main Window
-				MaxY:=SizeBottom - Height
-				MaxX:=SizeRight - Width - IndentFromRight
-				WinMove Main Window, , %MaxX%, %MaxY%
-				return
-				
-				
-				ButtonK:
-				;ListVars
-				StringTrimLeft, RunningName, A_GuiControl,9
-				sFileNameKill:=ProgRun%RunningName%
-				Process, Close, % sFileNameKill
-				;MsgBox, %sFileNameKill%
-				Loop
-				{
-					if WinExist(ProgRun%RunningName%)
-					{
-						Process, Close, % sFileNameKill
-					}
-					else if !WinExist(ProgRun%RunningName%)
-					{
-						break
-					}
-					
-					
-				}
-				GuiControl, Disable, FileName2%RunningName%
-				return
-				
-				Button-:
-				Gui, 1: Cancel
-				Gui, 2: Color, cFFFFFF
-				Gui, 2: Font, w700 c000000
-				Gui, 2: Add, Text, w%TitleWidth% h20 x30 y9 Center gDrag, Productivity scripts
-				Gui, 2: Font, c000000
-				Gui, 2: Add, Button, w20 h20 x5 y5, &+
-				Gui, 2: Add, Button, w20 h20 x%XButtonXCoord% y5, &X
-				Gui, 2: -Caption +AlwaysOnTop +Border
-				Gui, 2: Show, NoActivate w%SceneWidth% h30 x%Button_Right% y%Button_Bottom%, Minimized
-				WinGetPos X, Y, Width, Height, Minimized
-				MaxY:=SizeBottom - Height
-				MaxX:=SizeRight - Width - IndentFromRight
-				WinMove Minimized, , %MaxX%, %MaxY%
-				return
-				
-				2Button+:
-				Gui, 2: Destroy
-				Gui, 1: Show, NoActivate w%SceneWidth% h%YPos% x%GuiRight% y%GuiBottom%, Main Window
-				WinGetPos X, Y, Width, Height, Main Window
-				MaxY:=SizeBottom - Height
-				MaxX:=SizeRight - Width - IndentFromRight
-				WinMove Main Window, , %MaxX%, %MaxY%
-				return
-				
-				
-				ButtonX:
-				2ButtonX:
-				ExitApp
-				*
-				
-
-	*/
-	;________________________________
-
-	;________________________________
+	

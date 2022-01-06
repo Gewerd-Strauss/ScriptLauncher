@@ -66,9 +66,9 @@ From Left to right:
    
    # Known Bugs
    
-   - when disabling Suspend-Buttons (by setting bAddSuspendButtons=0), currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.
-   
-   
- MISSING IN DOCUMENTATION:
-   
-* Bottom Buttons explanation
+   - ~~when disabling Suspend-Buttons (by setting bAddSuspendButtons=0), currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.~~ fixed as of [v2.10.1](https://github.com/Gewerd-Strauss/ScriptLauncher/commit/c8b13f9c82ae49fc6a91efff1e580b9bf0b93139)
+
+
+# Credits
+
+This script is a _visual_ adaptation of [AfterLemon's Scriptlauncher](http://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/).
