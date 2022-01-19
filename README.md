@@ -51,8 +51,9 @@ Save the file after adding desired paths, then reload for the changes to take ef
    | bAddSuspendButtons | Add "Suspend [ScriptName]"-buttons for each script | 1
 
 
+---
 
-### 5. The bottom buttons:
+### The bottom buttons:
 
 From Left to right:
 
