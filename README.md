@@ -44,7 +44,7 @@ Save the file after adding desired paths, then reload for the changes to take ef
    | :-----------------|:-------------:|:-----:|
    | bShowTooltips | Display Tooltips on meaning of any button | 1/On
    | bHideOnLaunchScript | Hide Launcher at scriptstart | 0/Off
-   | bHideOnEditScript | Hide Launcher when opening the launcher in editor | 1
+   | bHideOnEditScript | Hide Launcher when opening the script in editor | 1
    | bHideOnOpenFolder | Hide Launcher when showing any script in folder | 1
    | bHideOnKillScript | Hide Launcher when stopping any script | 0
    | bHideOnSettingsOpened | Hide Launcher when opening the settings file | 1

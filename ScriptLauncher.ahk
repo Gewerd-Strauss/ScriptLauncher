@@ -1,4 +1,4 @@
-﻿/*  */ 	; Modified by Gewerd S.Source Code at bottom
+/*  */ 	; Modified by Gewerd S.Source Code at bottom
 	; reworked by Gewerd S. to allow files from multiple paths to be included, as well as a variety of other small goodies.
 	Please see documentation on github, found in the "About ScriptLauncher"-Menu (pressing '?' while GUI is visible)
 	Default, hardcoded hotkey to open GUI: !Sc029 (that is the caret/"^"/Ctrl-Modifiersymbol itself. Can be changed on line 987, or by searching for the string "::".)
@@ -9,7 +9,7 @@
 	based on original | AfterLemon 												| https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-gui/
 
 	Code by others:
-	GetMonitorMouse 					| qZanity 													| fetched from https://www.autohotkey.com/board/topic/98014-get-monitor-that-mouse-is-in/?p=617711
+	MWAGetMonitor						| Maestr0 													| fetched from https://www.autohotkey.com/boards/viewtopic.php?p=342716#p342716
 	fTrayRefresh 						| Courtesy of masato, original by Noesis 					| fetched from https://www.autohotkey.com/boards/viewtopic.php?p=156072&sid=f3233e93ef8f9df2aaf4d3dd88f320d0#p156072
 	f_SortArrays 						| u/astrosofista											| fetched from https://www.reddit.com/r/AutoHotkey/comments/qx0nho/comment/hl6ig7a/?utm_source=share&utm_medium=web2x&context=3
 	PID by script name 					| just me													| fetched from https://www.autohotkey.com/board/topic/90589-how-to-get-pid-just-by-a-scripts-name/?p=572448
@@ -813,14 +813,14 @@
 	SetTitleMatchMode, 2 
 	global script := { base : script
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "2.12.1"
+		,version : "2.13.1"
 		,author : "Gewerd Strauss"
 		,authorlink : ""
 		,email : "csa-07@freenet.de"
 		,credits : "AfterLemon"
 		,creditslink : "https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/"
 		,crtdate : "30.05.2013"
-		,moddate : "18.03.2022"
+		,moddate : "06.07.2022"
 		,homepagetext : ""
 		,homepagelink : ""
 		,ghtext 	 : "My GitHub"
@@ -1000,7 +1000,7 @@
 		if (A_GuiControl=aFileNameArr[A_Index])
 		{
 			path:=aPathArr[A_Index]
-			IF GetKeystate("CapsLock")
+			IF GetKeystate("LControl") ; open script in currently set editor
 			{
 				global EditorPath:="C:\Users\" A_UserName "\AppData\Local\Programs\Microsoft VS Code\Code.exe" ; set the path to your preferred editor when opening scripts || global just cuz copied in from elsewhere. It's a label, so it shouldn't matter anyways.
 				EnvGet, LocalAppData, LOCALAPPDATA
@@ -1205,7 +1205,7 @@
 		}
 		Source:=""
 		;; Handle 2 monitors.
-		CurrentMonitor:=GetMonitorMouse()
+		CurrentMOnitor:=MWAGetMonitor()
 		CurrentMonitor:=CurrentMonitor+0
 		SysGet, MonCount, MonitorCount
 		if (MonCount>1)
@@ -1364,7 +1364,7 @@
 	fEditScript(ScriptPath,LocalAppData)
 	{
 		run, % "C:\Users\Claudius Main\AppData\Local\Programs\Microsoft VS Code\Code.exe" A_Space Quote(ScriptPath)
-		Run, % LocalAppData "\Programs\Microsoft VS Code\Code.exe" A_Space Quote(ScriptPath)
+		Run, % LocalAppData 						 "\Programs\Microsoft VS Code\Code.exe" A_Space Quote(ScriptPath)
 		GUI, 1: hide
 		return
 	}
@@ -1427,22 +1427,30 @@
 		return """" String """"
 	}
 
-	GetMonitorMouse()
-	{ ; GetMonitorMouse | qZanity | fetched from //www.autohotkey.com/board/topic/98014-get-monitor-that-mouse-is-in/?p=617711, 19.11.2021
-		CoordModeMouse:=A_CoordModeMouse
-		CoordMode,Mouse,Screen
-		MouseGetPos, x, y
-		CoordMode, Mouse, %CoordModeMouse%
-		SysGet, MonC, MonitorCount
-		SysGet, Mon1, Monitor, 1
-		SysGet, Mon2, Monitor, 2
-	; Monitor1:={TLC:[Mon1]}
-		if (Mon2Right!=1080) || (Mon2Right!=1440) ;; adjust for additional 
-		if(x <= Mon2Right) || (MonC=1)
-			return 2		;; Main Screen
-		else
-			return 1		;; Laptop
+
+	MWAGetMonitor(Mx := "", My := "")
+	{ ; Maestr0 | fetched from https://www.autohotkey.com/boards/viewtopic.php?p=342716#p342716
+		if  (!Mx or !My) 
+		{
+			; if Mx or My is empty, revert to the mouse cursor placement
+			Coordmode, Mouse, Screen	; use Screen, so we can compare the coords with the sysget information`
+			MouseGetPos, Mx, My
+		}
+		
+		SysGet, MonitorCount, 80	; monitorcount, so we know how many monitors there are, and the number of loops we need to do
+		Loop, %MonitorCount%
+		{
+			SysGet, mon%A_Index%, Monitor, %A_Index%	; "Monitor" will get the total desktop space of the monitor, including taskbars
+			
+			if ( Mx >= mon%A_Index%left ) && ( Mx < mon%A_Index%right ) && ( My >= mon%A_Index%top ) && ( My < mon%A_Index%bottom )
+			{
+				ActiveMon := A_Index
+				break
+			}
+		}
+		return ActiveMon
 	}
+
 
 	fTray_Refresh()
 	{ ; Courtesy of masato, original version by Noesis: https://www.autohotkey.com/boards/viewtopic.php?p=156072&sid=f3233e93ef8f9df2aaf4d3dd88f320d0#p156072
