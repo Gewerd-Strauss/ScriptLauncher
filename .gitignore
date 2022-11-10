@@ -1,3 +1,4 @@
 *.ini
 *.json
 .vscode
+OldLauncher.ahk

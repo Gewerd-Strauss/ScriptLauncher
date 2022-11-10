@@ -4,7 +4,6 @@
 	Default, hardcoded hotkey to open GUI: !Sc029 (that is the caret/"^"/Ctrl-Modifiersymbol itself. Can be changed on line 987, or by searching for the string "::".)
 	/*
 	
-	
 	;; M= modified, if unsure not marked as such
 	based on original | AfterLemon 												| https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-gui/
 
@@ -29,798 +28,36 @@
 	#Persistent
 	#SingleInstance Force
 	#NoTrayIcon
-	; code starts line 810
-					
-		; last edited by Gewerd Strauss @ 27.11.2021
-		; from RaptorX https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk
-		/**
-		* ============================================================================ *
-		* @Author           : RaptorX <graptorx@gmail.com>
-		* @Script Name      : Script Object
-		* @Script Version   : 0.20.3
-		* @Homepage         :
-		*
-		* @Creation Date    : November 09, 2020
-		* @Modification Date: July 02, 2021
-		* @Modification G.S.: November 27, 2021
-		; @Description Modification G.S.: added field for GitHub-link, a Forum-link 
-										and a credits-field, as well as a template 
-										to quickly copy out into new scripts
-		* 
-		* @Description      :
-		* -------------------
-		* This is an object used to have a few common functions between scripts
-		* Those are functions and variables related to basic script information,
-		* upgrade and configuration.
-		*
-		* ============================================================================ *
-		*/
-		; scriptName   (opt) - Name of the script which will be
-		; 		                     shown as the title of the window and the main header
-		; 		version      (opt) - Script Version in SimVer format, a "v"
-		; 		                     will be added automatically to this value
-		; 		author       (opt) - Name of the author of the script
-		; 		credits 	 (opt) - Name of credited people
-		; 		creditslink  (opt) - Link to credited file, if any
-		; 		crtdate		 (opt) - Date of creation
-		; 		moddate		 (opt) - Date of modification
-		; 		homepagetext (opt) - Display text for the script website
-		; 		homepagelink (opt) - Href link to that points to the scripts
-		; 		                     website (for pretty links and utm campaing codes)
-		; 		ghlink 		 (opt) - GitHubLink
-		; 		ghtext 		 (opt) - GitHubtext
-		; 		forumlink    (opt) - forumlink to the scripts forum page
-		; 		forumtext    (opt) - forumtext 
-		; 		donateLink   (opt) - Link to a donation site
-		; 		email        (opt) - Developer email
-
-		; Template
-		; global script := {base         : script
-		;                  ,name         : regexreplace(A_ScriptName, "\.\w+")
-		;                  ,version      : "0.1.0"
-		;                  ,author       : ""
-		;                  ,email        : ""
-		;                  ,credits      : ""
-		;                  ,creditslink  : ""
-		;                  ,crtdate      : ""
-		;                  ,moddate      : ""
-		;                  ,homepagetext : ""
-		;                  ,homepagelink : ""
-		;                  ,ghlink       : ""
-		;                  ,ghtext 		 : ""
-		;                  ,doclink      : ""
-		;                  ,doctext		 : ""
-		;                  ,forumlink    : ""
-		;                  ,forumtext	 : ""
-		;                  ,donateLink   : ""
-		;                  ,resfolder    : A_ScriptDir "\res"
-		;                  ,iconfile     : A_ScriptDir "\res\sct.ico"
-		;                  ,configfile   : A_ScriptDir "\settings.ini"
-		;                  ,configfolder : A_ScriptDir ""
-		; 				   }
-
-		class script
-		{
-			static DBG_NONE     := 0
-				,DBG_ERRORS   := 1
-				,DBG_WARNINGS := 2
-				,DBG_VERBOSE  := 3
-
-			static name         := ""
-				,version      := ""
-				,author       := ""
-				,email        := ""
-				,credits      := ""
-				,creditslink  := ""
-				,crtdate      := ""
-				,moddate      := ""
-				,homepagetext := ""
-				,homepagelink := ""
-				,ghlink		:= ""
-				,ghtext 		:= ""
-				,doclink      := ""
-				,doctext		:= ""
-				,forumlink 	:= ""
-				,forumtext 	:= ""
-				,resfolder    := ""
-				,icon         := ""
-				,config       := ""
-				,systemID     := ""
-				,dbgFile      := ""
-				,dbgLevel     := this.DBG_NONE
-
-
-			/**
-				Function: Update
-				Checks for the current script version
-				Downloads the remote version information
-				Compares and automatically downloads the new script file and reloads the script.
-
-				Parameters:
-				vfile - Version File
-						Remote version file to be validated against.
-				rfile - Remote File
-						Script file to be downloaded and installed if a new version is found.
-						Should be a zip file that will be unzipped by the function
-
-				Notes:
-				The versioning file should only contain a version string and nothing else.
-				The matching will be performed against a SemVer format and only the three
-				major components will be taken into account.
-
-				e.g. '1.0.0'
-
-				For more information about SemVer and its specs click here: <https://semver.org/>
-			*/
-			Update(vfile, rfile)
-			{
-				; Error Codes
-				static ERR_INVALIDVFILE := 1
-				,ERR_INVALIDRFILE       := 2
-				,ERR_NOCONNECT          := 3
-				,ERR_NORESPONSE         := 4
-				,ERR_INVALIDVER         := 5
-				,ERR_CURRENTVER         := 6
-				,ERR_MSGTIMEOUT         := 7
-				,ERR_USRCANCEL          := 8
-
-				; A URL is expected in this parameter, we just perform a basic check
-				; TODO make a more robust match
-				if (!regexmatch(vfile, "^((?:http(?:s)?|ftp):\/\/)?((?:[a-z0-9_\-]+\.)+.*$)"))
-					throw {code: ERR_INVALIDVFILE, msg: "Invalid URL`n`nThe version file parameter must point to a 	valid URL."}
-
-				; This function expects a ZIP file
-				if (!regexmatch(rfile, "\.zip"))
-					throw {code: ERR_INVALIDRFILE, msg: "Invalid Zip`n`nThe remote file parameter must point to a zip file."}
-
-				; Check if we are connected to the internet
-				http := comobjcreate("WinHttp.WinHttpRequest.5.1")
-				http.Open("GET", "https://www.google.com", true)
-				http.Send()
-				try
-					http.WaitForResponse(1)
-				catch e
-					throw {code: ERR_NOCONNECT, msg: e.message}
-
-				Progress, 50, 50/100, % "Checking for updates", % "Updating"
-
-				; Download remote version file
-				http.Open("GET", vfile, true)
-				http.Send(), http.WaitForResponse()
-
-				if !(http.responseText)
-				{
-					Progress, OFF
-					throw {code: ERR_NORESPONSE, msg: "There was an error trying to download the ZIP file.`n"
-													. "The server did not respond."}
-				}
-				regexmatch(this.version, "\d+\.\d+\.\d+", loVersion)
-				regexmatch(http.responseText, "\d+\.\d+\.\d+", remVersion)
-
-				Progress, 100, 100/100, % "Checking for updates", % "Updating"
-				sleep 500 	; allow progress to update
-				Progress, OFF
-
-				; Make sure SemVer is used
-				if (!loVersion || !remVersion)
-					throw {code: ERR_INVALIDVER, msg: "Invalid version.`nThis function works with SemVer. "
-													. "For more information refer to the documentation in the function"}
-
-				; Compare against current stated version
-				ver1 := strsplit(loVersion, ".")
-				ver2 := strsplit(remVersion, ".")
-
-				for i1,num1 in ver1
-				{
-					for i2,num2 in ver2
-					{
-						if (newversion)
-							break
-
-						if (i1 == i2)
-							if (num2 > num1)
-							{
-								newversion := true
-								break
-							}
-							else
-								newversion := false
-					}
-				}
-
-				if (!newversion)
-					throw {code: ERR_CURRENTVER, msg: "You are using the latest version"}
-				else
-				{
-					; If new version ask user what to do
-					; Yes/No | Icon Question | System Modal
-					msgbox % 0x4 + 0x20 + 0x1000
-						, % "New Update Available"
-						, % "There is a new update available for this application.`n"
-						. "Do you wish to upgrade to v" remVersion "?"
-						, 10	; timeout
-
-					ifmsgbox timeout
-						throw {code: ERR_MSGTIMEOUT, msg: "The Message Box timed out."}
-					ifmsgbox no
-						throw {code: ERR_USRCANCEL, msg: "The user pressed the cancel button."}
-
-					; Create temporal dirs
-					ghubname := (InStr(rfile, "github") ? regexreplace(a_scriptname, "\..*$") "-latest\" : "")
-					filecreatedir % tmpDir := a_temp "\" regexreplace(a_scriptname, "\..*$")
-					filecreatedir % zipDir := tmpDir "\uzip"
-
-					; Create lock file
-					fileappend % a_now, % lockFile := tmpDir "\lock"
-
-					; Download zip file
-					urldownloadtofile % rfile, % tmpDir "\temp.zip"
-
-					; Extract zip file to temporal folder
-					oShell := ComObjCreate("Shell.Application")
-					oDir := oShell.NameSpace(zipDir), oZip := oShell.NameSpace(tmpDir "\temp.zip")
-					oDir.CopyHere(oZip.Items), oShell := oDir := oZip := ""
-
-					filedelete % tmpDir "\temp.zip"
-
-					/*
-					******************************************************
-					* Wait for lock file to be released
-					* Copy all files to current script directory
-					* Cleanup temporal files
-					* Run main script
-					* EOF
-					*******************************************************
-					*/
-					if (a_iscompiled){
-						tmpBatch =
-						(Ltrim
-							:lock
-							if not exist "%lockFile%" goto continue
-							timeout /t 10
-							goto lock
-							:continue
-
-							xcopy "%zipDir%\%ghubname%*.*" "%a_scriptdir%\" /E /C /I /Q /R /K /Y
-							if exist "%a_scriptfullpath%" cmd /C "%a_scriptfullpath%"
-
-							cmd /C "rmdir "%tmpDir%" /S /Q"
-							exit
-						)
-						fileappend % tmpBatch, % tmpDir "\update.bat"
-						run % a_comspec " /c """ tmpDir "\update.bat""",, hide
-					}
-					else
-					{
-						tmpScript =
-						(Ltrim
-							while (fileExist("%lockFile%"))
-								sleep 10
-
-							FileCopyDir %zipDir%\%ghubname%, %a_scriptdir%, true
-							FileRemoveDir %tmpDir%, true
-
-							if (fileExist("%a_scriptfullpath%"))
-								run %a_scriptfullpath%
-							else
-								msgbox `% 0x10 + 0x1000
-									, `% "Update Error"
-									, `% "There was an error while running the updated version.``n"
-										. "Try to run the program manually."
-									,  10
-								exitapp
-						)
-						fileappend % tmpScript, % tmpDir "\update.ahk"
-						run % a_ahkpath " " tmpDir "\update.ahk"
-					}
-					filedelete % lockFile
-					exitapp
-				}
-			}
-
-			/**
-				Function: Autostart
-				This Adds the current script to the autorun section for the current
-				user.
-
-				Parameters:
-				status - Autostart status
-						It can be either true or false.
-						Setting it to true would add the registry value.
-						Setting it to false would delete an existing registry value.
-			*/
-			Autostart(status)
-			{
-				if (status)
-				{
-					RegWrite, REG_SZ
-							, HKCU\SOFTWARE\microsoft\windows\currentversion\run
-							, %a_scriptname%
-							, %a_scriptfullpath%
-				}
-				else
-					regdelete, HKCU\SOFTWARE\microsoft\windows\currentversion\run
-							, %a_scriptname%
-			}
-
-			/**
-				Function: Splash
-				Shows a custom image as a splash screen with a simple fading animation
-
-				Parameters:
-				img   (opt) - file to be displayed
-				speed (opt) - fast the fading animation will be. Higher value is faster.
-				pause (opt) - long in seconds the image will be paused after fully displayed.
-			*/
-			Splash(img:="", speed:=10, pause:=2)
-			{
-				global
-
-					gui, splash: -caption +lastfound +border +alwaysontop +owner
-				$hwnd := winexist(), alpha := 0
-				winset, transparent, 0
-
-				gui, splash: add, picture, x0 y0 vpicimage, % img
-				guicontrolget, picimage, splash:pos
-				gui, splash: show, w%picimagew% h%picimageh%
-
-				setbatchlines 3
-				loop, 255
-				{
-					if (alpha >= 255)
-						break
-					alpha += speed
-					winset, transparent, %alpha%
-				}
-
-				; pause duration in seconds
-				sleep pause * 1000
-
-				loop, 255
-				{
-					if (alpha <= 0)
-						break
-					alpha -= speed
-					winset, transparent, %alpha%
-				}
-				setbatchlines -1
-
-				gui, splash:destroy
-				return
-			}
-
-			/**
-				Funtion: Debug
-				Allows sending conditional debug messages to the debugger and a log file filtered
-				by the current debug level set on the object.
-
-				Parameters:
-				level - Debug Level, which can be:
-						* this.DBG_NONE
-						* this.DBG_ERRORS
-						* this.DBG_WARNINGS
-						* this.DBG_VERBOSE
-
-				If you set the level for a particular message to *this.DBG_VERBOSE* this message
-				wont be shown when the class debug level is set to lower than that (e.g. *this.DBG_WARNINGS*).
-
-				label - Message label, mainly used to show the name of the function or label that triggered the message
-				msg   - Arbitrary message that will be displayed on the debugger or logged to the log file
-				vars* - Aditional parameters that whill be shown as passed. Useful to show variable contents to the debugger.
-
-				Notes:
-				The point of this function is to have all your debug messages added to your script and filter them out
-				by just setting the object's dbgLevel variable once, which in turn would disable some types of messages.
-			*/
-			Debug(level:=1, label:=">", msg:="", vars*)
-			{
-				if !this.dbglevel
-					return
-
-				for i,var in vars
-					varline .= "|" var
-
-				dbgMessage := label ">" msg "`n" varline
-
-				if (level <= this.dbglevel)
-					outputdebug % dbgMessage
-				if (this.dbgFile)
-					FileAppend, % dbgMessage, % this.dbgFile
-			}
-
-			/**
-				Function: About
-				Shows a quick HTML Window based on the object's variable information
-
-				Parameters:
-				scriptName   (opt) - Name of the script which will be
-									shown as the title of the window and the main header
-				version      (opt) - Script Version in SimVer format, a "v"
-									will be added automatically to this value
-				author       (opt) - Name of the author of the script
-				credits 	 (opt) - Name of credited people
-				ghlink 		 (opt) - GitHubLink
-				ghtext 		 (opt) - GitHubtext
-				doclink 	 (opt) - DocumentationLink
-				doctext 	 (opt) - Documentationtext
-				forumlink    (opt) - forumlink
-				forumtext    (opt) - forumtext
-				homepagetext (opt) - Display text for the script website
-				homepagelink (opt) - Href link to that points to the scripts
-									website (for pretty links and utm campaing codes)
-				donateLink   (opt) - Link to a donation site
-				email        (opt) - Developer email
-
-				Notes:
-				The function will try to infer the paramters if they are blank by checking
-				the class variables if provided. This allows you to set all information once
-				when instatiating the class, and the about GUI will be filled out automatically.
-			*/
-			About(scriptName:="", version:="", author:="",credits:="", homepagetext:="", homepagelink:="", donateLink:="", email:="")
-			{
-				static doc
-
-				scriptName := scriptName ? scriptName : this.name
-				version := version ? version : this.version
-				author := author ? author : this.author
-				credits := credits ? credits : this.credits
-				creditslink := creditslink ? creditslink : RegExReplace(this.creditslink, "http(s)?:\/\/")
-				ghtext := ghtext ? ghtext : RegExReplace(this.ghtext, "http(s)?:\/\/")
-				ghlink := ghlink ? ghlink : RegExReplace(this.ghlink, "http(s)?:\/\/")
-				doctext := doctext ? doctext : RegExReplace(this.doctext, "http(s)?:\/\/")
-				doclink := doclink ? doclink : RegExReplace(this.doclink, "http(s)?:\/\/")
-				forumtext := forumtext ? forumtext : RegExReplace(this.forumtext, "http(s)?:\/\/")
-				forumlink := forumlink ? forumlink : RegExReplace(this.forumlink, "http(s)?:\/\/")
-				homepagetext := homepagetext ? homepagetext : RegExReplace(this.homepagetext, "http(s)?:\/\/")
-				homepagelink := homepagelink ? homepagelink : RegExReplace(this.homepagelink, "http(s)?:\/\/")
-				donateLink := donateLink ? donateLink : RegExReplace(this.donateLink, "http(s)?:\/\/")
-				email := email ? email : this.email
-
-				if (donateLink)
-				{
-					donateSection =
-					(
-						<div class="donate">
-							<p>If you like this tool please consider <a href="https://%donateLink%">donating</a>.</p>
-						</div>
-						<hr>
-					)
-				}
-
-				html =
-				(
-					<!DOCTYPE html>
-					<html lang="en" dir="ltr">
-						<head>
-							<meta charset="utf-8">
-							<meta http-equiv="X-UA-Compatible" content="IE=edge">
-							<style media="screen">
-								.top {
-									text-align:center;
-								}
-								.top h2 {
-									color:#2274A5;
-									margin-bottom: 5px;
-								}
-								.donate {
-									color:#E83F6F;
-									text-align:center;
-									font-weight:bold;
-									font-size:small;
-									margin: 20px;
-								}
-								p {
-									margin: 0px;
-								}
-							</style>
-						</head>
-						<body>
-							<div class="top">
-								<h2>%scriptName%</h2>
-								<p>v%version%</p>
-								<hr>
-								<p>by %author%</p>
-				)
-				if ghlink and ghtext
-				{
-					sTmp=
-					(
-
-								<p><a href="https://%ghlink%" target="_blank">%ghtext%</a></p>
-					)
-					html.=sTmp
-				}
-				if doclink and doctext
-				{
-					sTmp=
-					(
-
-								<p><a href="https://%doclink%" target="_blank">%doctext%</a></p>
-					)
-					html.=sTmp
-				}
-				if creditslink and credits
-				{
-					; Clipboard:=html
-					sTmp=
-					(
-
-								<p>credits: <a href="https://%creditslink%" target="_blank">%credits%</a></p>
-								<hr>
-					)
-					html.=sTmp
-				}
-				if forumlink and forumtext
-				{
-					sTmp=
-					(
-
-								<p><a href="https://%forumlink%" target="_blank">%forumtext%</a></p>
-					)
-					html.=sTmp
-				}
-				if homepagelink and homepagetext
-				{
-					sTmp=
-					(
-
-								<p><a href="https://%homepagelink%" target="_blank">%homepagetext%</a></p>
-
-					)
-					html.=sTmp
-				}
-				sTmp=
-				(
-
-										</div>
-							%donateSection%
-						</body>
-					</html>
-				)
-				html.=sTmp
-				; Clipboard:=html
-				; html.= "`n
-				; (
-				; 	HEllo World
-				; )"
-				; Clipboard:=html
-				btnxPos := 300/2 - 75/2
-				axHight:=12
-				donateHeight := donateLink ? 6 : 0
-				forumHeight := forumlink ? 1 : 0
-				ghHeight := ghlink ? 1 : 0
-				creditsHeight := creditslink ? 1 : 0
-				homepageHeight := homepagelink ? 1 : 0
-				docHeight := doclink ? 1 : 0
-				axHight+=donateHeight
-				axHight+=forumHeight
-				axHight+=ghHeight
-				axHight+=creditsHeight
-				axHight+=homepageHeight
-				axHight+=docHeight
-				gui aboutScript:new, +alwaysontop +toolwindow, % "About " this.name
-				gui margin, 2
-				gui color, white
-				gui add, activex, w300 r%axHight% vdoc, htmlFile
-				gui add, button, w75 x%btnxPos% gaboutClose, % "&Close"
-				doc.write(html)
-				gui show, AutoSize
-				return
-
-				aboutClose:
-					gui aboutScript:destroy
-				return
-			}
-
-			/*
-				Function: GetLicense
-				Parameters:
-				Notes:
-			*/
-			GetLicense()
-			{
-				global
-
-				this.systemID := this.GetSystemID()
-				cleanName := RegexReplace(A_ScriptName, "\..*$")
-				for i,value in ["Type", "License"]
-					RegRead, %value%, % "HKCU\SOFTWARE\" cleanName, % value
-
-				if (!License)
-				{
-					MsgBox, % 0x4 + 0x20
-						, % "No license"
-						, % "Seems like there is no license activated on this computer.`n"
-							. "Do you have a license that you want to activate now?"
-
-					IfMsgBox, Yes
-					{
-						Gui, license:new
-						Gui, add, Text, w160, % "Paste the License Code here"
-						Gui, add, Edit, w160 vLicenseNumber
-						Gui, add, Button, w75 vTest, % "Save"
-						Gui, add, Button, w75 x+10, % "Cancel"
-						Gui, show
-
-						saveFunction := Func("licenseButtonSave").bind(this)
-						GuiControl, +g, test, % saveFunction
-						Exit
-					}
-
-					MsgBox, % 0x30
-						, % "Unable to Run"
-						, % "This program cannot run without a license."
-
-					ExitApp, 1
-				}
-
-				return {"type"    : Type
-					,"number"  : License}
-			}
-
-			/*
-				Function: SaveLicense
-				Parameters:
-				Notes:
-			*/
-			SaveLicense(licenseType, licenseNumber)
-			{
-				cleanName := RegexReplace(A_ScriptName, "\..*$")
-
-				Try
-				{
-					RegWrite, % "REG_SZ"
-							, % "HKCU\SOFTWARE\" cleanName
-							, % "Type", % licenseType
-
-					RegWrite, % "REG_SZ"
-							, % "HKCU\SOFTWARE\" cleanName
-							, % "License", % licenseNumber
-
-					return true
-				}
-				catch
-					return false
-			}
-
-			/*
-				Function: IsLicenceValid
-				Parameters:
-				Notes:
-			*/
-			IsLicenceValid(licenseType, licenseNumber, URL)
-			{
-				res := this.EDDRequest(URL, "check_license", licenseType ,licenseNumber)
-
-				if InStr(res, """license"":""inactive""")
-					res := this.EDDRequest(URL, "activate_license", licenseType ,licenseNumber)
-
-				if InStr(res, """license"":""valid""")
-					return true
-				else
-					return false
-			}
-
-			GetSystemID()
-			{
-				wmi := ComObjGet("winmgmts:{impersonationLevel=impersonate}!\\" A_ComputerName "\root\cimv2")
-				(wmi.ExecQuery("Select * from Win32_BaseBoard")._newEnum)[Computer]
-				return Computer.SerialNumber
-			}
-
-			/*
-				Function: EDDRequest
-				Parameters:
-				Notes:
-			*/
-			EDDRequest(URL, Action, licenseType, licenseNumber)
-			{
-				strQuery := url "?edd_action=" Action
-						.  "&item_id=" licenseType
-						.  "&license=" licenseNumber
-						.  (this.systemID ? "&url=" this.systemID : "")
-
-				try
-				{
-					http := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-					http.Open("GET", strQuery)
-					http.SetRequestHeader("Pragma", "no-cache")
-					http.SetRequestHeader("Cache-Control", "no-cache, no-store")
-					http.SetRequestHeader("User-Agent", "Mozilla/4.0 (compatible; Win32)")
-
-					http.Send()
-					http.WaitForResponse()
-
-					return http.responseText
-				}
-				catch err
-					return err.what ":`n" err.message
-			}
-
-			; Activate()
-			; 	{
-			; 	strQuery := this.strEddRootUrl . "?edd_action=activate_license&item_id=" . this.strRequestedProductId . "&license=" . this.strEddLicense . "&url=" . this.strUniqueSystemId
-			; 	strJSON := Url2Var(strQuery)
-			; 	Diag(A_ThisFunc . " strQuery", strQuery, "")
-			; 	Diag(A_ThisFunc . " strJSON", strJSON, "")
-			; 	return JSON.parse(strJSON)
-			; 	}
-			; Deactivate()
-			; 	{
-			; 	Loop, Parse, % "/|", |
-			; 	{
-			; 	strQuery := this.strEddRootUrl . "?edd_action=deactivate_license&item_id=" . this.strRequestedProductId . "&license=" . this.strEddLicense . "&url=" . this.strUniqueSystemId . A_LoopField
-			; 	strJSON := Url2Var(strQuery)
-			; 	Diag(A_ThisFunc . " strQuery", strQuery, "")
-			; 	Diag(A_ThisFunc . " strJSON", strJSON, "")
-			; 	this.oLicense := JSON.parse(strJSON)
-			; 	if (this.oLicense.success)
-			; 	break
-			; 	}
-			; 	}
-			; GetVersion()
-			; 	{
-			; 	strQuery := this.strEddRootUrl . "?edd_action=get_version&item_id=" . this.oLicense.item_id . "&license=" . this.strEddLicense . "&url=" . this.strUniqueSystemId
-			; 	strJSON := Url2Var(strQuery)
-			; 	Diag(A_ThisFunc . " strQuery", strQuery, "")
-			; 	Diag(A_ThisFunc . " strJSON", strJSON, "")
-			; 	return JSON.parse(strJSON)
-			; 	}
-			; RenewLink()
-			; 	{
-			; 	strUrl := this.strEddRootUrl . "checkout/?edd_license_key=" . this.strEddLicense . "&download_id=" . this.oLicense.item_id
-			; 	Diag(A_ThisFunc . " strUrl", strUrl, "")
-			; 	return strUrl
-			; 	}
-			
-
-			licenseButtonSave(CtrlHwnd, GuiEvent, EventInfo, ErrLevel:="")
-			{
-				GuiControlGet, LicenseNumber
-				if this.IsLicenceValid(this.eddID, licenseNumber, "https://www.the-automator.com")
-				{
-					this.SaveLicense(this.eddID, LicenseNumber)
-					MsgBox, % 0x30
-						, % "License Saved"
-						, % "The license was applied correctly!`n"
-							. "The program will start now."
-					
-					Reload
-				}
-				else
-				{
-					MsgBox, % 0x10
-						, % "Invalid License"
-						, % "The license you entered is invalid and cannot be activated."
-
-					ExitApp, 1
-				}
-			}
-
-			licenseButtonCancel(CtrlHwnd, GuiEvent, EventInfo, ErrLevel:="")
-			{
-				MsgBox, % 0x30
-					, % "Unable to Run"
-					, % "This program cannot run without a license."
-
-				ExitApp, 1
-			}
-				
-		}
+	#Include, <scriptObj/scriptObj>
 	BlockInput,On
 	SysGet, Size, MonitorWorkArea
 	SysGet, vMonCount,Monitorcount
 	SetTitleMatchMode, 2 
+	CreditsRaw=
+	(LTRIM
+	Original 							- AfterLemon 												- https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-gui/
+	MWAGetMonitor						- Maestr0 													- https://www.autohotkey.com/boards/viewtopic.php?p=342716#p342716
+	fTrayRefresh 						- Courtesy of masato, original by Noesis 					- https://www.autohotkey.com/boards/viewtopic.php?p=156072&sid=f3233e93ef8f9df2aaf4d3dd88f320d0#p156072
+	f_SortArrays 						- u/astrosofista											- https://www.reddit.com/r/AutoHotkey/comments/qx0nho/comment/hl6ig7a/?utm_source=share&utm_medium=web2x&context=3
+	PID by script name 					- just me													- https://www.autohotkey.com/board/topic/90589-how-to-get-pid-just-by-a-scripts-name/?p=572448
+	WinGetAll							- heresy (old ahk forums) 									- https://www.autohotkey.com/board/topic/30323-wingetall-get-all-windows-titleclasspidprocess-name/
+	AddToolTip 							- retrieved from AHK-Rare Repository, original by jballi  	- https://github.com/Ixiko/AHK-Rare, https://www.autohotkey.com/boards/viewtopic.php?t=30079
+	Quote 								- u/anonymous1184 											- https://www.reddit.com/r/AutoHotkey/comments/p2z9co/comment/h8oq1av/?utm_source=share&utm_medium=web2x&context=3
+	ReadINI 							- wolf_II												    - https://www.autohotkey.com/boards/viewtopic.php?p=256714#p256714
+	HasVal 								- jNizM  													- https://www.autohotkey.com/boards/viewtopic.php?p=109173&sid=e530e129dcf21e26636fec1865e3ee30#p109173
+	EditSwap							- J. Glines 												- https://the-Automator.com/EditSwap
+	ScriptObj  							- Gewerd S, original by RaptorX							    - https://github.com/Gewerd-Strauss/ScriptObj/blob/master/ScriptObj.ahk, https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk)								-	/
+	)
 	global script := { base : script
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "2.13.1"
+		,version : "2.14.2"
 		,author : "Gewerd Strauss"
 		,authorlink : ""
 		,email : "csa-07@freenet.de"
-		,credits : "AfterLemon"
-		,creditslink : "https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/"
+		,credits      : CreditsRaw
+		,creditslink  : ""
 		,crtdate : "30.05.2013"
-		,moddate : "06.07.2022"
+		,moddate : "10.11.2022"
 		,homepagetext : ""
 		,homepagelink : ""
 		,ghtext 	 : "My GitHub"
@@ -830,8 +67,6 @@
 		,forumtext 	 : ""
 		,forumlink	 : ""
 		,donateLink : ""
-		;~ ,resfolder    : A_ScriptDir "\res"
-		;~ ,iconfile     : A_ScriptDir "\res\sct.ico"
 		,configfile : regexreplace(A_ScriptName, "\.\w+") ".ini"
 		,configfolder : A_ScriptDir "\INI-Files\"
 		,vAHK	 : A_AhkVersion}	
@@ -839,16 +74,16 @@
 	vTimeTillReload:=1000*60*5
 	
 	ButtonWidth:=180 ; Can change these values
-	IndentFromRight:=230
-	;	
-	XButtonXCoord:=ButtonWidth + 10 ; Don't change these
-	XButtonXCoord2:=ButtonWidth+35
-	TitleWidth:=ButtonWidth - 3*20 - 5
-	SceneWidth:=ButtonWidth + 35 
+	, IndentFromRight:=230
 	;
-	GuiRight:=SizeRight - IndentFromRight - SceneWidth
-	Button_Right:=SizeRight - IndentFromRight - SceneWidth
-	Button_Bottom:=SizeBottom - 39
+	, XButtonXCoord:=ButtonWidth + 10 ; Don't change these
+	, XButtonXCoord2:=ButtonWidth+35
+	, TitleWidth:=ButtonWidth - 3*20 - 5
+	, SceneWidth:=ButtonWidth + 35 
+	;
+	, GuiRight:=SizeRight - IndentFromRight - SceneWidth
+	, Button_Right:=SizeRight - IndentFromRight - SceneWidth
+	, Button_Bottom:=SizeBottom - 39
 	;
 	Gui, 1: Color, cFFFFFF
 	SetTitleMatchMode, RegEx
@@ -856,24 +91,24 @@
 	
 	; variable setup
 	vPIDFileNameMatrix:=[]
-	aFileNameArr:=[]
-	aPathArr:=[]
-	aPIDarr:=[]
-	aPIDassarr:=[]
-	aFolderPaths:=[]
-	aButtonXClosedScripts:=[]
-	bKillTrueRestoreFalse:=true
-	Ind:=0
+	, aFileNameArr:=[]
+	, aPathArr:=[]
+	, aPIDarr:=[]
+	, aPIDassarr:=[]
+	, aFolderPaths:=[]
+	, aButtonXClosedScripts:=[]
+	, bKillTrueRestoreFalse:=true
+	, Ind:=0
 
 	global	EditorPath:="C:\Users\" A_UserName "\AppData\Local\Programs\Microsoft VS Code\Code.exe" ; set the path to your preferred editor when opening scripts
 	SplitPath, A_ScriptName,,,,A_ScriptNameNoExt
 	if FileExist(sExcludes:=script.configfolder script.configfile) ;|| if FileExist()
 	{
 		aTemp:=fLoadSettings(sExcludes)
-		IncludedFolders:=aTemp[1]
-		IncludedScripts:=aTemp[2]
-		ExcludedScripts:=aTemp[3]
-		IniObj:=aTemp[4]
+		, IncludedFolders:=aTemp[1]
+		, IncludedScripts:=aTemp[2]
+		, ExcludedScripts:=aTemp[3]
+		, IniObj:=aTemp[4]
 		if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 			SceneWidth+=25
 		aTemp:=[] ; clear array again
@@ -884,17 +119,26 @@
 		FileAppend, %DefFileTemplate%,%sExcludes%
 	}
 	aTemp:=f_CreateFileNameAndPathArrays(IncludedFolders,IncludedScripts,aFolderPaths,aPathArr,aFileNameArr,ExcludedScripts)
-	aPathArr:=aTemp[1]
-	aFileNameArr:=aTemp[2]
- 	aTemp:=[]
+	, aPathArr:=aTemp[1]
+	, aFileNameArr:=aTemp[2]
+ 	, aTemp:=[]
 	global aAllowedToBeClosedClasses:=["AutoHotkey","AutoHotkeyGUI"] ; make sure we don't accidentally kill editors/IDEs
 	f_SortArrays()
 
 	;; Sorting must be done by this point, because we start adding buttons now
 	Ind:=0
-	aPIDarr:=[]
-	for k,v in aPathArr
+	, aPIDarr:=[]
+	, Map:=[]
+	, MaxYPos:=aPathArr.Count()*25-20
+	, MaxYPos += 50
+	SysGet,MonW,MonitorWorkArea, 1
+	;MonWBottom
+	aPathArrOld:=aPathArr.Clone()
+	if (MaxYPos>=A_ScreenHeight)
+		aPathArr:=fSplitObjInHalf(aPathArr)
+	if IsObject(aPathArr[1])
 	{
+		for k,v in aPathArr[1]
 		{
 			YPos:=k*25-20
 			Gui, 1: Add, Button, w%ButtonWidth% h20 x5 y%YPos% gRun hwndRunBtn%Ind%, % aFileNameArr[k]
@@ -919,7 +163,97 @@
 						AddToolTip(SusBtn%Ind% ,"Suspend " aFileNameArr[K])
 				}
 				aPIDarr[k]:=PID_T ; "," PID_T2 "," PID_RGX "," PID_k "," PID_k_c "," PID_WinGetCleanEX 
-				aPIDassarr[aFileNameArr[k]]:=PID_T
+				, aPIDassarr[aFileNameArr[k]]:=PID_T
+			}
+			else
+			{
+				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% vKillButton%Ind% hwndKillBtn%Ind% y%YPos% glKillScript disabled , K
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+					Gui, 1: Add, BUtton, w20 h20 x%XButtonXCoord2% vSusButton%Ind% hwndSusBtn%Ind% y%YPos% glSusScript disabled, S
+				if IniObj["Script Behaviour Settings"].bShowTooltips
+				{
+					AddToolTip(KillBtn%Ind% ,"Kill " aFileNameArr[K])
+					if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+						AddToolTip(SusBtn%Ind% ,"Suspend " aFileNameArr[K])
+				}
+			}
+		}
+		XButtonXCoordOld:=XButtonXCoord
+		, XButtonXCoord2Old:=XButtonXCoord2
+		, XButtonXCoord:=XButtonXCoord+235
+		, XButtonXCoord2:=XButtonXCoord2+235
+		for k,v in aPathArr[2]
+		{
+				
+			YPos:=k*25-20
+			SplitPath, % v, , , , Name
+			Gui, 1: Add, Button, w%ButtonWidth% h20 x240 y%YPos% gRun hwndRunBtn%Ind%, % Name
+			if IniObj["Script Behaviour Settings"].bShowTooltips
+				AddToolTip(RunBtn%Ind% ,"Run " Name)
+
+			SetTitleMatchMode, 2
+			WinGetTitle, T,% v
+			WinGet,PID_T,PID,% T
+			
+			gosub, GetProgRunMatrix2
+			Ind++
+			if % aEnableKillButton[k]
+			{
+				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% vKillButton%Ind% hwndKillBtn%Ind% y%YPos% glKillScript , K
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+					Gui, 1: Add, BUtton, w20 h20 x%XButtonXCoord2% vSusButton%Ind% hwndSusBtn%Ind% y%YPos% glSusScript , S
+				if IniObj["Script Behaviour Settings"].bShowTooltips
+				{
+					AddToolTip(KillBtn%Ind% ,"Kill " Name)
+					if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+						AddToolTip(SusBtn%Ind% ,"Suspend " Name)
+				}
+				aPIDarr[k]:=PID_T ; "," PID_T2 "," PID_RGX "," PID_k "," PID_k_c "," PID_WinGetCleanEX 
+				, aPIDassarr[Name]:=PID_T
+			}
+			else
+			{
+				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% vKillButton%Ind% hwndKillBtn%Ind% y%YPos% glKillScript disabled , K
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+					Gui, 1: Add, BUtton, w20 h20 x%XButtonXCoord2% vSusButton%Ind% hwndSusBtn%Ind% y%YPos% glSusScript disabled, S
+				if IniObj["Script Behaviour Settings"].bShowTooltips
+				{
+					AddToolTip(KillBtn%Ind% ,"Kill " Name)
+					if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+						AddToolTip(SusBtn%Ind% ,"Suspend " Name)
+				}
+			}
+		}
+
+	}
+	else
+	{
+		for k,v in aPathArr
+		{
+			YPos:=k*25-20
+			Gui, 1: Add, Button, w%ButtonWidth% h20 x5 y%YPos% gRun hwndRunBtn%Ind%, % aFileNameArr[k]
+			if IniObj["Script Behaviour Settings"].bShowTooltips
+				AddToolTip(RunBtn%Ind% ,"Run " aFileNameArr[K])
+
+			SetTitleMatchMode, 2
+			WinGetTitle, T,% v
+			WinGet,PID_T,PID,% T
+			
+			gosub, GetProgRunMatrix2
+			Ind++
+			if % aEnableKillButton[k]
+			{
+				Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% vKillButton%Ind% hwndKillBtn%Ind% y%YPos% glKillScript , K
+				if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+					Gui, 1: Add, BUtton, w20 h20 x%XButtonXCoord2% vSusButton%Ind% hwndSusBtn%Ind% y%YPos% glSusScript , S
+				if IniObj["Script Behaviour Settings"].bShowTooltips
+				{
+					AddToolTip(KillBtn%Ind% ,"Kill " aFileNameArr[K])
+					if IniObj["Script Behaviour Settings"].bAddSuspendButtons
+						AddToolTip(SusBtn%Ind% ,"Suspend " aFileNameArr[K])
+				}
+				aPIDarr[k]:=PID_T ; "," PID_T2 "," PID_RGX "," PID_k "," PID_k_c "," PID_WinGetCleanEX 
+				, aPIDassarr[aFileNameArr[k]]:=PID_T
 			}
 			else
 			{
@@ -936,14 +270,14 @@
 		}
 	}
 	ButtonM_Ind:=Ind*(IniObj["Script Behaviour Settings"].bAddSuspendButtons?3:2)+1
-	ButtonE_Ind:=Ind*3+2
-	ButtonD_Ind:=Ind*3+3
-	ButtonR_Ind:=Ind*3+4
-	ButtonO_Ind:=Ind*3+5
-	ButtonS_Ind:=Ind*3+6
-	ButtonQ_Ind:=Ind*3+7
-	ButtonX_Ind:=Ind*3+8
-	ButtonF_Ind:=Ind*3+9
+	, ButtonE_Ind:=Ind*3+2
+	, ButtonD_Ind:=Ind*3+3
+	, ButtonR_Ind:=Ind*3+4
+	, ButtonO_Ind:=Ind*3+5
+	, ButtonS_Ind:=Ind*3+6
+	, ButtonQ_Ind:=Ind*3+7
+	, ButtonX_Ind:=Ind*3+8
+	, ButtonF_Ind:=Ind*3+9
 	DetectHiddenWindows, Off ; Detect hidden windows
 	SetTitleMatchMode, 2
 	YPos += 50
@@ -962,28 +296,55 @@
 	Gui, 1: Add, Button, w20 h20 xp+40 y%ButtonPos% HwndButtonOHwnd, &O
 	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonSHwnd, &S
 	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonQHwnd, &?
-	Gui, 1: Add, Button, w20 h20 x%XButtonXCoord% y%ButtonPos% HwndButtonXHwnd, &X
+
+	Gui, 1: Add, Button, w20 h20 x%XButtonXCoordOld% y%ButtonPos% HwndButtonXHwnd, &X
 	if IniObj["Script Behaviour Settings"].bAddSuspendButtons
-		Gui, 1: Add, Button, w20 h20 x%XButtonXCoord2% y%ButtonPos% HwndButtonFHwnd, &F
+		Gui, 1: Add, Button, w20 h20 x%XButtonXCoord2Old% y%ButtonPos% HwndButtonFHwnd, &F
 	Gui, 1: +AlwaysOnTop -Caption +ToolWindow +Border
 	if IniObj["Script Behaviour Settings"].bShowTooltips
 	{
 		AddToolTip(ButtonMHwnd,"Minimise GUI")
-		AddToolTip(ButtonEHwnd,"Edit Launcher")
-		AddToolTip(ButtonDHwnd,"Open Launcher Directory")
-		AddToolTip(ButtonRHwnd,"Reload Launcher")
-		AddToolTip(ButtonSHwnd,"Swap Editors")
-		AddToolTip(ButtonOHwnd,"Open Settings-file")
-		AddToolTip(ButtonXHwnd,"Kill All Scripts")
-		AddToolTip(ButtonQHwnd,"About and docs")
-		AddToolTip(ButtonFHwnd,"Freeze/suspend all scripts")
+		, AddToolTip(ButtonEHwnd,"Edit Launcher")
+		, AddToolTip(ButtonDHwnd,"Open Launcher Directory")
+		, AddToolTip(ButtonRHwnd,"Reload Launcher")
+		, AddToolTip(ButtonSHwnd,"Swap Editors")
+		, AddToolTip(ButtonOHwnd,"Open Settings-file")
+		, AddToolTip(ButtonXHwnd,"Kill All Scripts")
+		, AddToolTip(ButtonQHwnd,"About and docs")
+		, AddToolTip(ButtonFHwnd,"Freeze/suspend all scripts")
 	}
 	BlockInput,Off
 	gosub, lEditorSwapper
 	return
 
+	fIsRunning(Path)
+	{
+		DetectHiddenWindows, On
+		WinGet, List, List, ahk_class AutoHotkey
+		Loop % List 
+		{
+			WinGetTitle, title, % "ahk_id" List%A_Index%
+			if Instr(title,Path)
+				return true
+		}
+		return false
+	}
+	fSplitObjInHalf(Obj)
+	{
+		Length:=Obj.Count()
+		, Obj1:=[]
+		, Obj2:=[]
+		for k,v in Obj
+		{
+			if (k<=floor(Length/2))
+				Obj1.push(v)
+			else
+				Obj2.push(v)
+		}
+		return [Obj1,Obj2]
+	}
 	!Sc029::			; show script menu
-	if WinExist("Main Window")
+	if WinActive("Main Window")
 		Gui, 1: Cancel ;reload ;WinClose ;MsgBox, window active, lets minimise it
 	else
 		gosub, 2Button+
@@ -999,7 +360,7 @@
 	{
 		if (A_GuiControl=aFileNameArr[A_Index])
 		{
-			path:=aPathArr[A_Index]
+			path:=aPathArrOld[A_Index]
 			IF GetKeystate("LControl") ; open script in currently set editor
 			{
 				global EditorPath:="C:\Users\" A_UserName "\AppData\Local\Programs\Microsoft VS Code\Code.exe" ; set the path to your preferred editor when opening scripts || global just cuz copied in from elsewhere. It's a label, so it shouldn't matter anyways.
@@ -1028,21 +389,20 @@
 			}
 			Run, Autohotkey.exe "%Path%",	,	,PID
 			aPIDarr[A_Index]:=PID
-			aPIDassarr[A_GuiControl]:=PID
-			ProcessRun:=A_Index								;; get the current pid'
-			KillBtnNumber:=ProcessRun*3-1
+			, aPIDassarr[A_GuiControl]:=PID
+			, ProcessRun:=A_Index	
+			GuiControlGet, out, focus
+			ProcessRun:=SubStr(out, 7, strLen(out)-6)
+			, KillBtnNumber:=ProcessRun+1
+			, SusBtnNumber:=ProcessRun+2
 			guiControl, enable, Button%KillBtnNumber%
 			if IniObj["Script Behaviour Settings"].bAddSuspendButtons
-			{
-				SusBtnNumber:=KillBtnNumber+1
 				guiControl, enable, Button%SusBtnNumber%
-			}
 			if IniObj["Script Behaviour Settings"].bHideOnLaunchScript
 				Gui, 1: cancel
 			break
 		}
 	}
-	until (aPathArr.MaxIndex()<=A_Index)
 	return
 	
 	lSuspend:
@@ -1064,27 +424,61 @@
 	DetectHiddenWindows, On
 	WinGet, List, List, ahk_class AutoHotkey
 	aEnableKillButton:=[]
-	aRunningPaths:=[]
+	, aRunningPaths:=[]
 	Loop % List 
 	{
 		WinGetTitle, title, % "ahk_id" List%A_Index%
 		aRunningPaths.push(RegExReplace(title, " - AutoHotkey v[\.0-9]+$")) ; collect all running autohotkey windows, regardless of origin
 	}
-	for s,w in aPathArr
+	if IsObject(aPathArr[1])
 	{
-		if HasVal(aRunningPaths,w) ; check if any path in observed folders is active
-			aEnableKillButton.push(1)
-		else
-			aEnableKillButton.push(0)
+		aEnableKillButton2:=[]
+		for s,w in aPathArr[1]
+		{
+			aEnableKillButton.push(d:=(!!(HasVal(aRunningPaths,w)))+0)
+			; if HasVal(aRunningPaths,w) ; check if any path in observed folders is active
+			; 	aEnableKillButton.push(1)
+			; else
+			; 	aEnableKillButton.push(0)
+		}
+		for s,w in aPathArr[2]
+		{
+			aEnableKillButton.push(!!(HasVal(aRunningPaths,w))+0)
+			; if HasVal(aRunningPaths,w) ; check if any path in observed folders is active
+			; 	aEnableKillButton.push(1)
+			; else
+			; 	aEnableKillButton.push(0)
+		}
+	}
+	else
+	{
+		for s,w in aPathArr
+		{
+			if HasVal(aRunningPaths,w) ; check if any path in observed folders is active
+				aEnableKillButton.push(1)
+			else
+				aEnableKillButton.push(0)
+		}
 	}
 	return
 
 	lSusScript:
 	{
-		Index:=strsplit(A_GuiControl,"on").2 
-		SusBtnNumber:=Index*3
+				GuiControlGet, out, focus
+				ProcessRun:=SubStr(out, 7, strLen(out)-6)
+				KillBtnNumber:=ProcessRun+1
+				SusBtnNumber:=ProcessRun+2
+				ProcessRun:=SubStr(out, 7, strLen(out)-6)
+				SusBtnNumber:=ProcessRun
+				GuiControlGet, sFileNameKill,,% "Button" ProcessRun - 2
+							; GuiControlGet, sStateCurrentScript,,Button%SusBtnNumber%
+							; Index:=strsplit(A_GuiControl,"on").2 
+							; ; KillBtnNumber:=Index*3-1
+							; sFileNameKill:=aFileNameArr[Index]
+							; Index:=strsplit(A_GuiControl,"on").2 
+							; SusBtnNumber:=Index*3
 		GuiControlGet, sStateCurrentScript,,Button%SusBtnNumber%
-		sFileNameKill:=aFileNameArr[Index]
+							; sFileNameKill:=aFileNameArr[Index]
 		DetectHiddenWindows, On
 		WinGetClass, cClass, % sFileNameKill ".ahk"
 		aAllowedToBeClosedClasses:=["AutoHotkey","AutoHotkeyGUI"] ; make sure we don't accidentally kill editors/IDEs
@@ -1236,19 +630,19 @@
 			PositionXGui:=MonRight-SceneWidth
 		Else
 			PositionXGui:=MouseX
-		
+		if (PositionYGui<0) ;; list is longer than screen is high
 		Gui, 1: Show, w%SceneWidth% h%YPos% x%PositionXGui% y%PositionYGui% Hide, Main Window 
 		guicontrol, focus, Button%ButtonM_Ind%
 		Settimer, lCheckButtons,100
 		WinGetPos X, Y, Width, Height, Main Window
-		Gui, 1: Show
+		Gui, 1: Show,, Main Window
 	}
 	return
 
 	lCheckButtons:
 	if !WinExist("Main Window") ;; window not visible anymore, so stop the timer
 		Settimer, lCheckButtons, off
-	Source:=A_ThisLabel		;; return out of the '2Button+'-subroutine earlier if coming from this label.
+	Source:=A_ThisLabel			;; return out of the '2Button+'-subroutine earlier if coming from this label.
 	gosub, 2Button+
 	return
 
@@ -1257,7 +651,7 @@
 		for k,v in aFileNameArr
 		{
 			DetectHiddenWindows, On
-			if WinExist(v ".ahk") ;and HasVal(aAllowedToBeClosedClasses,cClass)
+			if WinExist(v ".ahk")
 			{
 				str:=v ".ahk - AutoHotkey"
 				PostMessage, 0x111, 65305,,, %str%   ; Suspend.
@@ -1266,6 +660,29 @@
 		}
 	}
 	return
+/* 		;; WOrking on detecting suspension state
+ButtonF:
+	{ 
+		for k,v in aFileNameArr
+		{
+			DetectHiddenWindows, On
+			if WinExist(v ".ahk") ;and HasVal(aAllowedToBeClosedClasses,cClass)
+			{
+				str:=v ".ahk - AutoHotkey"
+				PostMessage, 0x111, 65305,,, %str%   ; Suspend.
+				WinGetTitle, cT, % str
+			}
+			DetectHiddenWindows, Off
+		}
+		if IniObj["Script Behaviour Settings"].bHideOnKillScript
+			Gui, 1: hide
+		fTray_Refresh() ; remove dead icons
+	}
+	return
+*/
+
+
+
 
 	; A_ThisLabel
 	ButtonX:

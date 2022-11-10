@@ -75,3 +75,7 @@ From Left to right:
 # Credits
 
 This script is a _visual_ adaptation of [AfterLemon's Scriptlauncher](http://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/).
+
+## non-included Dependencies 
+
+The [ScriptObj-version by me](https://github.com/Gewerd-Strauss/ScriptObj) is an adopted dependency based on the original script by [RaptorX](https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk).
