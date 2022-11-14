@@ -46,11 +46,11 @@
 	ReadINI 							- wolf_II												    - https://www.autohotkey.com/boards/viewtopic.php?p=256714#p256714
 	HasVal 								- jNizM  													- https://www.autohotkey.com/boards/viewtopic.php?p=109173&sid=e530e129dcf21e26636fec1865e3ee30#p109173
 	EditSwap							- J. Glines 												- https://the-Automator.com/EditSwap
-	ScriptObj  							- Gewerd S, original by RaptorX							    - https://github.com/Gewerd-Strauss/ScriptObj/blob/master/ScriptObj.ahk, https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk)								-	/
+	ScriptObj  							- Gewerd S, original by RaptorX							    - https://github.com/Gewerd-Strauss/ScriptObj/blob/master/ScriptObj.ahk, https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk
 	)
 	global script := { base : script
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "2.14.2"
+		,version : "2.15.2"
 		,author : "Gewerd Strauss"
 		,authorlink : ""
 		,email : "csa-07@freenet.de"
@@ -134,7 +134,7 @@
 	SysGet,MonW,MonitorWorkArea, 1
 	;MonWBottom
 	aPathArrOld:=aPathArr.Clone()
-	if (MaxYPos>=A_ScreenHeight)
+	; if (MaxYPos>=A_ScreenHeight)
 		aPathArr:=fSplitObjInHalf(aPathArr)
 	if IsObject(aPathArr[1])
 	{
@@ -283,24 +283,50 @@
 	YPos += 50
 	GuiBottom:=SizeBottom - YPos
 	TitlePos:=YPos - 21
+	TitlePos:=YPos - 21
 	ButtonPos:=YPos - 25
 	Gui, 1: Font, w700 c000000
 	; Gui, 1: Add, Text, w%TitleWidth% h20 x35 y%TitlePos% Center gDrag, Scripts
 	Gui, 1: Font, c000000
-	Gui, 1: Add, Button, w20 h20 x5 y%ButtonPos% HwndButtonMHwnd, &M
-	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonEHwnd, &E
-	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonDHwnd, &D
-	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonRHwnd, &R
-	Gui, 1: Add, Text, w40 h20 xp+20 y%TitlePos% gDrag, Scripts
-	vRightEdgeofTitle:=TitleWidth+20
-	Gui, 1: Add, Button, w20 h20 xp+40 y%ButtonPos% HwndButtonOHwnd, &O
-	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonSHwnd, &S
-	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonQHwnd, &?
+	if Mod(Ind,2)
+	{
 
-	Gui, 1: Add, Button, w20 h20 x%XButtonXCoordOld% y%ButtonPos% HwndButtonXHwnd, &X
+		TitlePos:=Titlepos - 25
+		ButtonPos:=ButtonPos - 25
+		YPos:=YPos-25
+		Gui, 1: Add, Button, w20 h20 x5 y%ButtonPos% HwndButtonMHwnd, &M
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonEHwnd, &E
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonDHwnd, &D
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonRHwnd, &R
+		Gui, 1: Add, Text, w40 h20 xp+20 y%TitlePos% gDrag, Scripts
+		vRightEdgeofTitle:=TitleWidth+20
+		Gui, 1: Add, Button, w20 h20 xp+40 y%ButtonPos% HwndButtonOHwnd, &O
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonSHwnd, &S
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonQHwnd, &?
+
+		Gui, 1: Add, Button, w20 h20 x%XButtonXCoordOld% y%ButtonPos% HwndButtonXHwnd, &X
+	}
+	else
+	{ ;; even numbers
+
+		Gui, 1: Add, Button, w20 h20 x5 y%ButtonPos% HwndButtonMHwnd, &M
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonEHwnd, &E
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonDHwnd, &D
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonRHwnd, &R
+		Gui, 1: Add, Text, w40 h20 xp+20 y%TitlePos% gDrag, Scripts
+		vRightEdgeofTitle:=TitleWidth+20
+		Gui, 1: Add, Button, w20 h20 xp+40 y%ButtonPos% HwndButtonOHwnd, &O
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonSHwnd, &S
+		Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonQHwnd, &?
+
+		Gui, 1: Add, Button, w20 h20 x%XButtonXCoordOld% y%ButtonPos% HwndButtonXHwnd, &X
+	}
 	if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 		Gui, 1: Add, Button, w20 h20 x%XButtonXCoord2Old% y%ButtonPos% HwndButtonFHwnd, &F
+	TotalWidth:=XButtonXCoord2+20+2*5
 	Gui, 1: +AlwaysOnTop -Caption +ToolWindow +Border
+	if WinActive("ahk_exe Code.exe")
+		Gui, 1: -AlwaysOnTop
 	if IniObj["Script Behaviour Settings"].bShowTooltips
 	{
 		AddToolTip(ButtonMHwnd,"Minimise GUI")
@@ -511,17 +537,38 @@
 		Index:=strsplit(A_GuiControl,"on").2 
 		KillBtnNumber:=Index*3-1
 		sFileNameKill:=aFileNameArr[Index]
+		if IsObject(aPathArr)
+		{
+			if (Index>aPathArr[1].Count())
+				sPathToKill:=aPathArr[2,(Index-aPathArr[1].Count())]
+			else
+				sPathToKill:=aPathArr[1,Index]
+		}
+		else
+			sPathToKill:=aPathArr[Index]
 		DetectHiddenWindows, On
 		WinGetClass, cClass, % sFileNameKill ".ahk"
 		if WinExist(sFileNameKill ".ahk") and HasVal(aAllowedToBeClosedClasses,cClass)
 		{ ;A_GuiControl
 			WinClose
-			if WinExist(sFileNameKill ".ahk")
+			WinKill,% "ahk_exe " WinExist(sPathToKill)
+			if d:=WinExist(sFileNameKill ".ahk")
 			{
-				Process, Close, % sFileNameKill (Instr(sFileNameKill,".ahk")?:".ahk")	;; Killing via "FileName" doesn't work for some reason.
-				Process, Close, % sFileNameKill											;; Killing via "FileName" doesn't work for some reason. || not sure if this is smart to leave out the .ahk. Could this kill editors? 
-				if WinExist(sFileNameKill ".ahk")
-					Process, Close, % aPIDarr[Index]
+				str:=sFileNameKill ".ahk - AutoHotkey"
+				PostMessage, 0x0112, 0xF060,,, %str%  ; 0x0112 = WM_SYSCOMMAND, 0xF060 = SC_CLOSE
+				str:=sPathToKill " - AutoHotkey"
+				PostMessage, 0x0112, 0xF060,,, %str%  ; 0x0112 = WM_SYSCOMMAND, 0xF060 = SC_CLOSE
+				Process, close, % d
+				loop,
+				{
+					if !WinExist(sFileNameKill ".ahk")
+						break
+					Process, Close, % sFileNameKill (Instr(sFileNameKill,".ahk")?:".ahk")	;; Killing via "FileName" doesn't work for some reason.
+					Process, Close, % sFileNameKill											;; Killing via "FileName" doesn't work for some reason. || not sure if this is smart to leave out the .ahk. Could this kill editors? 
+					if WinExist(sFileNameKill ".ahk")
+						Process, Close, % aPIDarr[Index]
+				}
+				until (A_Index>15)
 			}
 			GuiControl, Disable, Button%KillBtnNumber%
 			if IniObj["Script Behaviour Settings"].bAddSuspendButtons
@@ -622,7 +669,13 @@
 		CoordMode, Mouse, %CoordModeMouse%
 		; ButtonPos:=ButtonPos+25
 		if ((MouseY+ButtonPos)>MonWBottom)
-			PositionYGui:=MonWBottom-(ButtonPos+25)
+		{
+			if ((MouseY-ButtonPos)<MonWTop)
+				PositionYGui:=0
+			Else
+				PositionYGui:=MonWBottom-YPos
+			; PositionYGui:=MonWBottom-(ButtonPos+(A_ScreenHeight-MonWBottom))
+		}
 		else 
 			PositionYGui:=MouseY
 		
@@ -630,7 +683,9 @@
 			PositionXGui:=MonRight-SceneWidth
 		Else
 			PositionXGui:=MouseX
-		if (PositionYGui<0) ;; list is longer than screen is high
+		if (SceneWidth<TotalWidth)
+			SceneWidth:=TotalWidth
+		; if (PositionYGui<0) ;; list is longer than screen is high
 		Gui, 1: Show, w%SceneWidth% h%YPos% x%PositionXGui% y%PositionYGui% Hide, Main Window 
 		guicontrol, focus, Button%ButtonM_Ind%
 		Settimer, lCheckButtons,100
