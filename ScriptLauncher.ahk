@@ -373,7 +373,7 @@
 	if WinActive("Main Window")
 		Gui, 1: Cancel ;reload ;WinClose ;MsgBox, window active, lets minimise it
 	else
-		gosub, 2Button+
+		gosub, ToggleActiveButtons
 	return
 	#IfWinActive, About AHK ScriptLauncher
 	Esc:: gui, 1: cancel
@@ -613,7 +613,7 @@
 	Gui, 1: Cancel
 	return
 	
-	2Button+:
+	ToggleActiveButtons:
 	{
 		gosub, GetProgRunMatrix2
 		for k,v in aEnableKillButton		;; logical array
@@ -697,8 +697,8 @@
 	lCheckButtons:
 	if !WinExist("Main Window") ;; window not visible anymore, so stop the timer
 		Settimer, lCheckButtons, off
-	Source:=A_ThisLabel			;; return out of the '2Button+'-subroutine earlier if coming from this label.
-	gosub, 2Button+
+	Source:=A_ThisLabel			;; return out of the 'ToggleActiveButtons'-subroutine earlier if coming from this label.
+	gosub, ToggleActiveButtons
 	return
 
 	ButtonF:
