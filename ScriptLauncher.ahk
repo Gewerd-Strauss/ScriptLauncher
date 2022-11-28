@@ -819,9 +819,6 @@ ButtonF:
 	{
 		EnvGet, LocalAppData, LOCALAPPDATA
 		fEditScript(A_ScriptFullPath,LocalAppData)
-		; run, % "C:\Users\Claudius Main\AppData\Local\Programs\Microsoft VS Code\Code.exe" A_Space Quote(A_ScriptFullPath)
-		; Run % LocalAppData "\Programs\Microsoft VS Code\Code.exe" A_Space Quote(A_ScriptFullPath)
-		; GUI, 1: hide
 	}
 	return
 	ButtonD:
@@ -835,7 +832,6 @@ ButtonF:
 	return
 	fEditScript(ScriptPath,LocalAppData)
 	{
-		run, % "C:\Users\Claudius Main\AppData\Local\Programs\Microsoft VS Code\Code.exe" A_Space Quote(ScriptPath)
 		Run, % LocalAppData 						 "\Programs\Microsoft VS Code\Code.exe" A_Space Quote(ScriptPath)
 		GUI, 1: hide
 		return
