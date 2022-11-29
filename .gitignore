@@ -1,4 +1,5 @@
 *.ini
 *.json
 .vscode
-OldLauncher.ahk
+ScriptLauncher_v1.ahk
+ScriptLauncher_v2.ahk
