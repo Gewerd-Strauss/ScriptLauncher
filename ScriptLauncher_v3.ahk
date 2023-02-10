@@ -465,7 +465,7 @@ SetControlDelay          	, -1
 				}
 				;; todo: autodetect script's ahk-version so that the launcher can run v1 and v2 scripts.
 				if ScriptIsV2(Path)
-					Run % A_ProgramFiles "\AutoHotkey\v2\AutohotkeyU64.exe" Quote(Path),,,PID
+					Run % A_ProgramFiles "\AutoHotkey\v2\AutoHotkey.exe"	 A_Space Quote(Path),,,PID
 				else
 					Run, Autohotkey.exe "%Path%",	,	,PID
 				aPIDarr[A_Index]:=PID
@@ -502,8 +502,10 @@ SetControlDelay          	, -1
 	ScriptIsV2(path)
 	{
 		FileRead, FileString, % path
-		Res:=IdentifyBySyntax(FileString)
-		return 
+		;Res:=IdentifyBySyntax(FileString)
+		RegExMatch(FileString, "i)\#Requires Autohotkey v*(?<Version>(\d|\.|\+)*)", v)
+
+		return (SubStr(vVersion,1,1)=2?true:false)
 	}
 	
 	get_identify_regex()
@@ -513,34 +515,33 @@ SetControlDelay          	, -1
 	}
 
 
-	IdentifyBySyntax(code) {
-	Clipboard:=code
-    static identify_regex := quote(get_identify_regex())
-	Clipboard:=identify_regex
-    p := 1, count_1 := count_2 := 0, version := marks := ""
-    while (p := RegExMatch(code, identify_regex, m, p)) {
-        p += m.Len()
-        if SubStr(m.mark,1,1) = "v" {
-            switch SubStr(m.mark,2,1) {   
-            case "1": count_1++
-            case "2": count_2++
-            }
-            if !InStr(marks, m.mark)
-                marks .= m.mark " "
-        }
-    }
-    if !(count_1 || count_2)
-        return {v: 0, r: "no tell-tale matches"}
-    ; Use a simple, cautious approach for now: select a version only if there were
-    ; matches for exactly one version.
-    if count_1 && count_2
+	IdentifyBySyntax(code)
 	{
-		out:={v: 0, r: Format(            count_1 > count_2 ? "v1 {1}:{2} - {3}" : count_2 > count_1 ? "v2 {2}:{1} - {3}" : "? {1}:{2} - {3}",            count_1, count_2, Trim(marks)        )}
-        return out
+		static identify_regex := quote(get_identify_regex())
+		p := 1, count_1 := count_2 := 0, version := marks := ""
+		while (p := RegExMatch(code, identify_regex, m, p)) {
+			p += m.Len()
+			if SubStr(m.mark,1,1) = "v" {
+				switch SubStr(m.mark,2,1) {   
+				case "1": count_1++
+				case "2": count_2++
+				}
+				if !InStr(marks, m.mark)
+					marks .= m.mark " "
+			}
+		}
+		if !(count_1 || count_2)
+			return {v: 0, r: "no tell-tale matches"}
+		; Use a simple, cautious approach for now: select a version only if there were
+		; matches for exactly one version.
+		if count_1 && count_2
+		{
+			out:={v: 0, r: Format(            count_1 > count_2 ? "v1 {1}:{2} - {3}" : count_2 > count_1 ? "v2 {2}:{1} - {3}" : "? {1}:{2} - {3}",            count_1, count_2, Trim(marks)        )}
+			return out
+		}
+		out:={v: count_1 ? 1 : 2, r: Trim(marks)}
+		return out
 	}
-	out:={v: count_1 ? 1 : 2, r: Trim(marks)}
-    return out
-}
 
 
 
@@ -671,6 +672,15 @@ SetControlDelay          	, -1
 					}
 				}
 				until (A_Index>15)
+			}
+			if WinExist(sFileNameKill ".ahk") && IniObj["Script Behaviour Settings"].bReloadToKill
+			{
+				if ScriptIsV2(sPathToKill)
+					Run % A_ProgramFiles "\AutoHotkey\v2\AutoHotkey.exe"	 A_Space Quote(sPathToKill),,,PIDa
+				else
+					Run, Autohotkey.exe "%sPathToKill%",	,	,PIDa
+				ttip(PIDa,,0)
+				Process, Close, % PIDa
 			}
 			if !IniObj["Script Behaviour Settings"].bAddSuspendButtons
 			KillBtnNumber:=KillBtnNumber+1
