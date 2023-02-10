@@ -667,6 +667,11 @@ SetControlDelay          	, -1
 						Process, Close, % aPIDarr[Index]
 					if WinExist(sFileNameKill ".ahk")
 					{
+						WinGet, PID, PID, % sFileNameKill ".ahk",,, - Visual Studio Code
+						WinGet, PIDs_Class,PID, % "ahk_pid " PID
+						WinGet, PIDs_exe, ProcessName, % "ahk_pid " PID
+						if PIDs_exe!="AutoHotkey.exe"
+							break
 						WinGet, PID, PID, % sFileNameKill ".ahk"
 						Process, Close, % PID
 					}
