@@ -327,7 +327,6 @@ SetControlDelay          	, -1
 	global ActiveScripts:=CountIf(aEnableKillButton,true)
 	global TotalScripts:=aEnableKillButton.Count()
 	AddToolTip(TitleHwnd,"Total Scripts:" TotalScripts "`nActive:" ActiveScripts )
-	AddToolTip(TitleHwnd,"Test2" )
 	
 	Gui, 1: Add, Button, w20 h20 xp+40 y%ButtonPos% HwndButtonOHwnd gButtonO, &O
 	Gui, 1: Add, Button, w20 h20 xp+20 y%ButtonPos% HwndButtonSHwnd gButtonS, &S
@@ -658,7 +657,7 @@ SetControlDelay          	, -1
 				PostMessage, 0x0112, 0xF060,,, %str%  ; 0x0112 = WM_SYSCOMMAND, 0xF060 = SC_CLOSE
 				Process, close, % d
 				loop,
-				{
+					{
 					if !WinExist(sFileNameKill ".ahk")
 						break
 					Process, Close, % sFileNameKill (Instr(sFileNameKill,".ahk")?:".ahk")	;; Killing via "FileName" doesn't work for some reason.
@@ -687,8 +686,9 @@ SetControlDelay          	, -1
 				ttip(PIDa,,0)
 				Process, Close, % PIDa
 			}
+
 			if !IniObj["Script Behaviour Settings"].bAddSuspendButtons
-			KillBtnNumber:=KillBtnNumber+1
+				KillBtnNumber:=KillBtnNumber+1
 			GuiControl, Disable, Button%KillBtnNumber%
 			if IniObj["Script Behaviour Settings"].bAddSuspendButtons
 			{
@@ -883,8 +883,7 @@ SetControlDelay          	, -1
 		global
 		aEnableKillButton:=GetProgRunMatrix2(aPathArr)
 		ActiveScripts:=CountIf(aEnableKillButton,true)
-		ttip(["Total Scripts:" aEnableKillButton.Count() "`nActive:" ActiveScripts,A_ThisFunc])
-		ttip(["Total Scripts:" aEnableKillButton.Count() "`nActive:" ActiveScripts,A_ThisFunc])
+		;ttip(["Total Scripts:" aEnableKillButton.Count() "`nActive:" ActiveScripts,A_ThisFunc])
 		AddToolTip(TitleHwnd,"",false)
 		AddToolTip(TitleHwnd,"Test")
 		AddToolTip(TitleHwnd,"Total Scripts:" aEnableKillButton.Count() "`nActive:" ActiveScripts)
