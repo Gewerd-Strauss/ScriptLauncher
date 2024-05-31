@@ -209,15 +209,15 @@ if IsObject(aPathArr[1])
 
 		YPos:=k*25-20
 		SplitPath % v, , , vExt, Name
-		vc:=(vExt=".exe"?" *":"")
+		vc:=(vExt=".exe"?".exe *":(vExt="py"?".py *":""))
 		if (A_Index=15) {
 
 		}
 		if IniObj["Script Behaviour Settings"].bAddSuspendButtons
-			Gui 1: Add, Button, w%ButtonWidth% h20 x240 y%YPos% gRun hwndRunBtn%Ind%, %  Name (vExt="exe"?" *":"")
+			Gui 1: Add, Button, w%ButtonWidth% h20 x240 y%YPos% gRun hwndRunBtn%Ind%, %  Name vc
 		else
 		{
-			Gui 1: Add, Button, w%ButtonWidth% h20 x215 y%YPos% gRun hwndRunBtn%Ind%, %  Name (vExt="exe"?" *":"")
+			Gui 1: Add, Button, w%ButtonWidth% h20 x215 y%YPos% gRun hwndRunBtn%Ind%, %  Name vc
 		}
 		if IniObj["Script Behaviour Settings"].bShowTooltips
 			AddToolTip(RunBtn%Ind% ,"Run " Name (vExt="exe"?" *":""))
@@ -564,6 +564,8 @@ Run()
 			SplitPath % Path,,, PathExt
 			if (PathExt="exe") {
 				run % Quote(Path),,,PID
+			} else if (PathExt="py") {
+				Run % ComSpec " /K python " Quote(Path),,,PID
 			} else {
 				if ScriptIsV2(Path)
 					Run % A_ProgramFiles "\AutoHotkey\v2\AutoHotkey.exe"	 A_Space Quote(Path),,,PID
@@ -1326,6 +1328,23 @@ f_CreateFileNameAndPathArrays(IncludedFolders,IncludedScripts,ExcludedScripts)
 				; StringTrimRight, FileName%A_IndexCount%, A_LoopFileName, 4
 				aPathArr.push(A_LoopFileFullPath)
 				aFileNameArr.push(StrSplit(A_LoopFileName,".").1 . " *")
+			}
+			else
+				continue
+		}
+		loop, %IncludedScriptsDirectory%\*.py, R
+		{
+			if (A_LoopFileName <> A_ScriptName) && !HasVal(ExcludedScripts, A_LoopFileName) && (HasVal(IncludedScripts,A_LoopFileFullPath) || HasVal(IncludedScripts,A_LoopFileName) )
+			{
+				; A_LoopFileFullPath
+				; A_IndexCount:=A_Index
+				A_IndexCount++
+				; If A_IndexCountMinus
+				; 	A_IndexCount -= A_IndexCountMinus
+				YPos:=A_IndexCount * 25 - 20
+				; StringTrimRight, FileName%A_IndexCount%, A_LoopFileName, 4
+				aPathArr.push(A_LoopFileFullPath)
+				aFileNameArr.push(StrSplit(A_LoopFileName,".").1 . ".py *")
 			}
 			else
 				continue
