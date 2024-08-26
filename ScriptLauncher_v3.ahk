@@ -21,7 +21,7 @@ EditSwap							| J. Glines 												| https://the-Automator.com/EditSwap
 ScriptObj  							| Gewerd S, RaptorX 					 				   M| https://github.com/Gewerd-Strauss/ScriptObj/blob/master/ScriptObj.ahk, https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk
 
 */
-#Requires AutoHotkey v1.1.33+
+#Requires AutoHotkey v1.1+
 #NoEnv
 #Persistent
 #SingleInstance Force
@@ -570,7 +570,7 @@ Run()
 				if ScriptIsV2(Path)
 					Run % A_ProgramFiles "\AutoHotkey\v2\AutoHotkey.exe"	 A_Space Quote(Path),,,PID
 				else
-					Run Autohotkey.exe "%Path%",	,	,PID
+					Run "%Path%",	,	,PID
 			}
 			aPIDarr[A_Index]:=PID
 				, aPIDassarr[A_GuiControl]:=PID
@@ -1103,21 +1103,15 @@ fEditScript(ScriptPath,LocalAppData,cEDT)
 	;ProgramPath:= LocalAppData "\Programs\Microsoft VS Code\Code.exe" ;; original one.
 	ProgramPath2:=strsplit(cEDT,".exe").1 ".exe"
 	;ProgramPath2:="D:\Downloads\Installationen\VSC Testing\VSCode Portable\Code.exe"
-	;m((ProgramPath==ProgramPath2),ProgramPath,ProgramPath2)
-	Run % ProgramPath2 A_Space Quote(ScriptPath),,UseErrorLevel
+	Run % ProgramPath2 A_Space Quote(ScriptPath),,UseErrorLevel,pid
 
-	if ErrorLevel && FileExist(ProgramPath) ;; fallback on
+	; Run "code " "D:\Dokumente neu\Repositories\AHK\BSM" ""
+	if ErrorLevel && FileExist(ProgramPath2) ;; fallback on
 	{
 		ttip("fallback")
-		Run % ProgramPath A_Space Quote(ScriptPath)
+		Run "code " quote(ScriptPath)
+		; Run % ProgramPath A_Space Quote(ScriptPath)
 	}
-	if !FileExist(ProgramPath) && !FileExist(ProgramPath2)
-		MsgBox % 0x10
-		, % "Error"
-		, % "No editor is available or set up by editswap."
-	; Clipboard:="ScriptPath: " ScriptPath "`n||`nLocalAppData: " LocalAppData "`n||`nRunCMD: " ProgramPath A_Space Quote(ScriptPath)
-	Gui 1: cancel
-	Gui 2: cancel
 	return
 }
 
