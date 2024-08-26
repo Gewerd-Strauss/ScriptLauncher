@@ -69,8 +69,8 @@ script := { base : script.base
 		,resfolder : A_ScriptDir "\res"
 		,aboutPath : A_ScriptDir "\res\About.html"
 		,reqInternet: false
-		,version : "3.16.2"
-		,moddate : "22.11.2022"
+		,version : "3.17.2"
+		,moddate : "26.08.2024"
 		,configfile : regexreplace(A_ScriptName, "\.\w+") ".ini"
 		,configfolder : A_ScriptDir "\INI-Files\"
 		,vAHK	 : A_AhkVersion}
