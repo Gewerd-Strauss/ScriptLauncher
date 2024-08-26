@@ -57,44 +57,26 @@ BlockInput On
 SysGet Size, MonitorWorkArea
 SysGet vMonCount,Monitorcount
 SetTitleMatchMode 2
-CreditsRaw=
-	(LTRIM
-		Original 							- AfterLemon 												- https://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-gui/
-		MWAGetMonitor						- Maestr0 													- https://www.autohotkey.com/boards/viewtopic.php?p=342716#p342716
-		fTrayRefresh 						- Courtesy of masato, original by Noesis 					- https://www.autohotkey.com/boards/viewtopic.php?p=156072&sid=f3233e93ef8f9df2aaf4d3dd88f320d0#p156072
-		f_SortArrays 						- u/astrosofista											- https://www.reddit.com/r/AutoHotkey/comments/qx0nho/comment/hl6ig7a/?utm_source=share&utm_medium=web2x&context=3
-		PID by script name 					- just me													- https://www.autohotkey.com/board/topic/90589-how-to-get-pid-just-by-a-scripts-name/?p=572448
-		AddToolTip 							- retrieved from AHK-Rare Repository, original by jballi  	- https://github.com/Ixiko/AHK-Rare, https://www.autohotkey.com/boards/viewtopic.php?t=30079
-		Quote 								- u/anonymous1184 											- https://www.reddit.com/r/AutoHotkey/comments/p2z9co/comment/h8oq1av/?utm_source=share&utm_medium=web2x&context=3
-		ReadINI 							- wolf_II												    - https://www.autohotkey.com/boards/viewtopic.php?p=256714#p256714
-		HasVal 								- jNizM  													- https://www.autohotkey.com/boards/viewtopic.php?p=109173&sid=e530e129dcf21e26636fec1865e3ee30#p109173
-		EditSwap							- J. Glines 												- https://the-Automator.com/EditSwap
-		ScriptObj  							- Gewerd S, original by RaptorX							    - https://github.com/Gewerd-Strauss/ScriptObj/blob/master/ScriptObj.ahk, https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk
-	)
-global script := { base : script
+FileGetTime ModDate,%A_ScriptFullPath%,M
+FileGetTime CrtDate,%A_ScriptFullPath%,C
+CrtDate:=SubStr(CrtDate,7, 2) "." SubStr(CrtDate,5,2) "." SubStr(CrtDate,1,4)
+ModDate:=SubStr(ModDate,7, 2) "." SubStr(ModDate,5,2) "." SubStr(ModDate,1,4)
+global script := new script()
+script := { base : script.base
 		,name : regexreplace(A_ScriptName, "\.\w+")
-		,version : "3.16.2"
-		,author : "Gewerd Strauss"
-		,authorlink : ""
-		,email : "csa-07@freenet.de"
-		,credits      : CreditsRaw
-		,creditslink  : ""
 		,crtdate : "30.05.2013"
+		,moddate : ModDate     
+		,resfolder : A_ScriptDir "\res"
+		,aboutPath : A_ScriptDir "\res\About.html"
+		,reqInternet: false
+		,version : "3.16.2"
 		,moddate : "22.11.2022"
-		,homepagetext : ""
-		,homepagelink : ""
-		,ghtext 	 : "My GitHub"
-		,ghlink		 : "https://github.com/Gewerd-Strauss"
-		,doctext : "Documentation"
-		,doclink	 : "https://github.com/Gewerd-Strauss/ScriptLauncher#scriptlauncher---first-startup"
-		,forumtext 	 : ""
-		,forumlink	 : ""
-		,donateLink : ""
 		,configfile : regexreplace(A_ScriptName, "\.\w+") ".ini"
 		,configfolder : A_ScriptDir "\INI-Files\"
 		,vAHK	 : A_AhkVersion}
 ; variable setup
-
+script.loadCredits(script.resfolder "\credits.txt")
+	, script.loadMetadata(script.resfolder "\meta.txt")
 vTimeTillReload:=1000*60*5
 global EditorPath:="C:\Users\" A_UserName "\AppData\Local\Programs\Microsoft VS Code\Code.exe" ; set the path to your preferred editor when opening scripts
 global aAllowedToBeClosedClasses:=["AutoHotkey","AutoHotkeyGUI"] ; make sure we don't accidentally kill editors/IDEs
