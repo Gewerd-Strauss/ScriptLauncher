@@ -32,9 +32,7 @@ If there are specific scripts in the folders added above that you don't want to 
 
 Insert any script path to a specific script to include, even if you don't want to include the entire directory.
 
-
-
---- 
+---
 
 Save the file after adding desired paths, then reload for the changes to take effect.
 
@@ -50,10 +48,9 @@ Save the file after adding desired paths, then reload for the changes to take ef
    | bHideOnSettingsOpened | Hide Launcher when opening the settings file | 1
    | bAddSuspendButtons | Add "Suspend [ScriptName]"-buttons for each script | 1
 
-
 ---
 
-### The bottom buttons:
+### The bottom buttons
 
 From Left to right:
 
@@ -66,16 +63,13 @@ From Left to right:
 7. `?`: Information about this script, links to this github and its origins.
 8. `X`: Kill all active scripts on the list
 9. `F`: Suspend/continue all scripts on the list.
-   
-   # Known Bugs
-   
-   - ~~when disabling Suspend-Buttons (by setting bAddSuspendButtons=0), currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.~~ fixed as of [v2.10.1](https://github.com/Gewerd-Strauss/ScriptLauncher/commit/c8b13f9c82ae49fc6a91efff1e580b9bf0b93139)
 
+# Known Bugs
+
+- ~~when disabling Suspend-Buttons (by setting bAddSuspendButtons=0), currently the wrong buttons get disabled when disabling buttons belonging to scripts which are not running. Keep the settings at default until I've fixed this.~~ fixed as of [v2.10.1](https://github.com/Gewerd-Strauss/ScriptLauncher/commit/c8b13f9c82ae49fc6a91efff1e580b9bf0b93139)
 
 # Credits
 
 This script is a _visual_ adaptation of [AfterLemon's Scriptlauncher](http://www.autohotkey.com/board/topic/93997-list-all-ahk-scripts-in-directory-in-Gui/).
 
-## non-included Dependencies 
-
-The [ScriptObj-version by me](https://github.com/Gewerd-Strauss/ScriptObj) is an adopted dependency based on the original script by [RaptorX](https://github.com/RaptorX/ScriptObj/blob/master/ScriptObj.ahk).
+Credits for containing code can be seen by pressing `?` while the GUI is active.
