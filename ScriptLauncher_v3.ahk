@@ -571,7 +571,7 @@ Run()
 			ToggleActiveButtons(aPathArr,IniObj)
 			break
 		}
-		else if InStr(A_GuiControl,"Scriptlauncher/INI-Files/" A_ScriptNameNoExt)
+		else if InStr(A_GuiControl,"/INI-Files/" A_ScriptNameNoExt)
 		{
 			path:=aPathArr_United[A_Index]
 			if FileExist(path)
