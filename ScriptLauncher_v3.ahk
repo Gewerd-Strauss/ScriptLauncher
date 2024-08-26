@@ -571,10 +571,10 @@ Run()
 			ToggleActiveButtons(aPathArr,IniObj)
 			break
 		}
-		else if (A_GuiControl="Scriptlauncher/INI-Files/" A_ScriptNameNoExt)
+		else if InStr(A_GuiControl,"Scriptlauncher/INI-Files/" A_ScriptNameNoExt)
 		{
 			path:=aPathArr_United[A_Index]
-			if (Path==A_ScriptDir "/INI-Files/" A_ScriptNameNoExt ".ini")?
+			if FileExist(path)
 			{
 				MsgBox % "No Paths set to be read. Please first set a path to a specified file or folder in the respective section of the following settings file."
 				run % Path
